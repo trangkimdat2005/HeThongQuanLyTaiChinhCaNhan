@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Hệ Thống Quản Lý Tài Chính</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <style>
+        /* --- CSS RIÊNG CHO ADMIN --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+            /* Màu nền xám nhẹ */
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR STYLE */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 260px;
+            margin-left: -260px;
+            transition: margin .25s ease-out;
+            background-color: #212529;
+            /* Màu đen xám chuyên nghiệp */
+            position: fixed;
+            z-index: 1000;
+        }
+
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: #1a1e21;
+            /* Đậm hơn chút để tách biệt logo */
+            text-align: center;
+            border-bottom: 1px solid #373b3e;
+        }
+
+        #sidebar-wrapper .list-group {
+            width: 260px;
+        }
+
+        .list-group-item {
+            background-color: transparent;
+            color: #aeb4b9;
+            /* Màu chữ xám nhạt */
+            border: none;
+            padding: 14px 25px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .list-group-item:hover {
+            background-color: #2c3034;
+            color: #fff;
+        }
+
+        /* Class active để đánh dấu đang ở trang nào */
+        .list-group-item.active-menu {
+            background-color: #2c3034;
+            color: #3b7ddd;
+            /* Màu xanh nổi bật */
+            border-left: 4px solid #3b7ddd;
+            font-weight: 600;
+        }
+
+        .list-group-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* MAIN CONTENT STYLE */
+        #page-content-wrapper {
+            width: 100%;
+            transition: margin .25s ease-out;
+        }
+
+        /* NAVBAR STYLE */
+        .navbar-admin {
+            background-color: #fff;
+            box-shadow: 0 0.1rem 0.5rem rgba(0, 0, 0, 0.05);
+            padding: 12px 20px;
+        }
+
+        /* Responsive Logic */
+        @media (min-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: 0;
+            }
+
+            #page-content-wrapper {
+                margin-left: 260px;
+            }
+
+            /* Khi bấm nút toggle trên PC thì ẩn menu đi */
+            body.sb-sidenav-toggled #sidebar-wrapper {
+                margin-left: -260px;
+            }
+
+            body.sb-sidenav-toggled #page-content-wrapper {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading text-uppercase">
+                <i class="fas fa-coins text-primary me-2"></i> QLTC Admin
+            </div>
+            <div class="list-group list-group-flush mt-3">
+                <a href="/admin/dashboard.html" class="list-group-item list-group-item-action active-menu">
+                    <i class="fas fa-tachometer-alt"></i> Tổng Quan
+                </a>
+
+                <a href="/admin/users.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-users"></i> Người Dùng
+                </a>
+
+                <a href="/admin/categories.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-layer-group"></i> Danh Mục Gốc
+                </a>
+
+                <a href="/admin/categories.html"
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-headset"></i> Hỗ Trợ</span>
+                    <span class="badge bg-danger rounded-pill">3</span>
+                </a>
+
+                <a href="/admin/setting.html"
+                    class="list-group-item list-group-item-action mt-4 border-top border-secondary pt-3">
+                    <i class="fas fa-cog"></i> Cấu Hình
+                </a>
+
+                <a href="/admin/historyerror.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-file-alt"></i> Nhật Ký Lỗi
+                </a>
+
+                <a href="/admin/logout.html" onclick="logoutAdmin()"
+                    class="list-group-item list-group-item-action text-danger mt-3">
+                    <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand navbar-admin">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <button class="btn btn-light border" id="sidebarToggle">
+                        <i class="fas fa-bars text-secondary"></i>
+                    </button>
+
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            <span class="me-2 text-dark fw-bold small d-none d-sm-block">Administrator</span>
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=3b7ddd&color=fff"
+                                class="rounded-circle" width="36" height="36">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ</a>
+                            </li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2 text-muted"></i>Đổi mật
+                                    khẩu</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logoutAdmin()">Thoát</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4" id="main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-0">Danh Sách Người Dùng</h3>
+                        <p class="text-muted small mb-0">Quản lý toàn bộ tài khoản hệ thống</p>
+                    </div>
+                    <a class="btn btn-success shadow-sm" href="/admin/addUser.html">
+                        <i class="fas fa-plus me-2"></i>Thêm Mới
+                    </a>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <table id="tableUser" class="table table-hover align-middle" style="width:100%">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Người dùng</th>
+                                    <th>Email</th>
+                                    <th>Quyền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tham gia</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+            </div>
+
+            <footer class="bg-white p-3 text-center text-muted small border-top mt-auto">
+                &copy; 2026 Hệ Thống Quản Lý Tài Chính. All rights reserved.
+            </footer>
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            // 1. SINH DỮ LIỆU GIẢ (50 USER) ĐỂ TEST PHÂN TRANG
+            // Trong thực tế, cái này là dữ liệu lấy từ Database về
+            const fakeData = [];
+            const firstNames = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Võ", "Đặng"];
+            const lastNames = ["Văn A", "Thị B", "Quốc C", "Minh Khôi", "Gia Hân", "Bảo Ngọc", "Anh Tuấn", "Đức Minh", "Thanh Hà"];
+            const roles = ["User", "User", "User", "User", "Admin"]; // Tỉ lệ User nhiều hơn Admin
+            const statuses = ["Active", "Active", "Active", "Banned"]; // Thi thoảng có ông bị Ban
+
+            for (let i = 1; i <= 50; i++) {
+                let rdFirst = firstNames[Math.floor(Math.random() * firstNames.length)];
+                let rdLast = lastNames[Math.floor(Math.random() * lastNames.length)];
+                let fullName = `${rdFirst} ${rdLast}`;
+                let role = roles[Math.floor(Math.random() * roles.length)];
+                let status = statuses[Math.floor(Math.random() * statuses.length)];
+
+                fakeData.push({
+                    id: i,
+                    name: fullName,
+                    email: removeVietnameseTones(fullName).toLowerCase().replace(/\s/g, '') + i + "@gmail.com",
+                    role: role,
+                    status: status,
+                    joinDate: `0${Math.floor(Math.random() * 9) + 1}/01/2026`
+                });
+            }
+
+            // 2. KÍCH HOẠT DATATABLES (CÁI MÀY CẦN)
+            var table = $('#tableUser').DataTable({
+                data: fakeData, // Nạp dữ liệu giả vào
+
+                // Cấu hình các cột
+                columns: [
+                    { data: 'id', render: function (data) { return `<span class="fw-bold text-muted">#${data}</span>`; } },
+                    {
+                        data: 'name',
+                        render: function (data, type, row) {
+                            // Render Avatar + Tên
+                            let bg = row.role === 'Admin' ? '212529' : '3b7ddd';
+                            return `
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name=${data}&background=${bg}&color=fff" class="rounded-circle me-2" width="35">
+                                <span class="fw-bold text-dark">${data}</span>
+                            </div>
+                        `;
+                        }
+                    },
+                    { data: 'email' },
+                    {
+                        data: 'role',
+                        render: function (data) {
+                            return data === 'Admin'
+                                ? `<span class="badge bg-primary">Admin</span>`
+                                : `<span class="badge bg-light text-dark border">User</span>`;
+                        }
+                    },
+                    {
+                        data: 'status',
+                        render: function (data) {
+                            return data === 'Active'
+                                ? `<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Active</span>`
+                                : `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Banned</span>`;
+                        }
+                    },
+                    { data: 'joinDate' },
+                    {
+                        data: null, // Cột hành động
+                        className: "text-end",
+                        render: function (data, type, row) {
+                            return `
+                            <a class="btn btn-sm btn-light text-primary me-1" title="Sửa" onclick="editUser('${row.name}')" href="/admin/editUser.html"><i class="fas fa-edit"></i></a>
+                            <button class="btn btn-sm btn-light text-danger" title="Xóa/Khóa" onclick="deleteUser(${row.id}, '${row.name}')"><i class="fas fa-trash-alt"></i></button>
+                        `;
+                        }
+                    }
+                ],
+
+                // 3. VIỆT HÓA GIAO DIỆN (Để nó ra tiếng Việt thay vì tiếng Anh)
+                language: {
+                    search: "Tìm kiếm nhanh:",
+                    lengthMenu: "Hiển thị _MENU_ dòng",
+                    info: "Đang hiện _START_ đến _END_ trong tổng _TOTAL_ người",
+                    infoEmpty: "Không có dữ liệu",
+                    zeroRecords: "Không tìm thấy kết quả nào khớp",
+                    paginate: {
+                        first: "Đầu",
+                        last: "Cuối",
+                        next: "Sau",
+                        previous: "Trước"
+                    }
+                },
+
+                // Cấu hình giao diện Bootstrap 5
+                pageLength: 10, // Mặc định hiện 10 dòng
+                lengthMenu: [5, 10, 20, 50], // Các mức chọn hiển thị
+                ordering: true, // Cho phép sắp xếp cột
+                responsive: true
+            });
+        });
+
+        // --- HÀM XỬ LÝ NÚT BẤM (SWEETALERT2) ---
+
+        function deleteUser(id, name) {
+            Swal.fire({
+                title: `Xóa user ${name}?`,
+                text: "Hành động này không thể hoàn tác!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Xóa luôn',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Xử lý xóa dòng trong bảng thật luôn
+                    var table = $('#tableUser').DataTable();
+                    // Tìm dòng có chứa nút bấm này để xóa (Mô phỏng)
+                    // Trong thực tế sẽ gọi API delete xong reload bảng
+                    Swal.fire('Đã xóa!', 'User đã bay màu.', 'success');
+                }
+            })
+        }
+
+        function editUser(name) {
+            Swal.fire('Tính năng Sửa', `Đang mở form sửa cho: ${name}`, 'info');
+        }
+
+        function createNewUser() {
+            Swal.fire('Thêm mới', 'Mở popup thêm user ở đây', 'success');
+        }
+
+        // Hàm phụ trợ: Bỏ dấu tiếng Việt để tạo email
+        function removeVietnameseTones(str) {
+            str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+            str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+            str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+            str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+            str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+            str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+            str = str.replace(/đ/g, "d");
+            str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+            str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+            str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+            str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+            str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+            str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+            str = str.replace(/Đ/g, "D");
+            return str;
+        }
+    </script>
+
+    <script>
+        // 1. Logic ẩn hiện Sidebar
+        const sidebarToggle = document.body.querySelector('#sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', event => {
+                event.preventDefault();
+                document.body.classList.toggle('sb-sidenav-toggled');
+            });
+        }
+
+        // 2. Logic Đăng xuất
+        function logoutAdmin() {
+            Swal.fire({
+                title: 'Bạn muốn đăng xuất?',
+                text: "Kết thúc phiên làm việc của Admin.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Đăng xuất',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Đã đăng xuất', '', 'success');
+                    // Chỗ này sau này sẽ code chuyển hướng về trang Login
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>

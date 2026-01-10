@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký - MoneyMaster</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); /* Màu chủ đạo đồng bộ */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card-register {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px; /* Rộng hơn login một chút */
+            background-color: #fff;
+        }
+
+        .card-header-reg {
+            background-color: #fff;
+            padding: 30px 40px 10px 40px;
+            text-align: center;
+        }
+
+        .card-body-reg {
+            padding: 20px 40px 40px 40px;
+        }
+
+        .form-control {
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            height: 50px;
+            padding-left: 45px; /* Chừa chỗ cho Icon */
+        }
+
+        /* Icon nằm trong input */
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b7b9cc;
+            z-index: 10;
+        }
+
+        .btn-register {
+            border-radius: 50px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            background-color: #1cc88a; /* Màu xanh lá cho nút Đăng ký khác biệt chút */
+            border: none;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .btn-register:hover {
+            background-color: #17a673;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(28, 200, 138, 0.3);
+            color: white;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #b7b9cc;
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e3e6f0;
+            color: #5a5c69;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .social-btn:hover {
+            background-color: #f8f9fc;
+            color: #4e73df;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card card-register animate__animated animate__fadeInUp">
+        
+        <div class="card-header-reg">
+            <h4 class="fw-bold text-dark">Tạo Tài Khoản</h4>
+            <p class="text-muted small mb-0">Bắt đầu hành trình quản lý tài chính ngay hôm nay!</p>
+        </div>
+
+        <div class="card-body-reg">
+            <form id="registerForm">
+                
+                <div class="mb-3 position-relative">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" class="form-control" id="fullName" placeholder="Họ và tên đầy đủ" required>
+                </div>
+
+                <div class="mb-3 position-relative">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" class="form-control" id="email" placeholder="Địa chỉ Email" required>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-sm-6 position-relative">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+                    </div>
+                    <div class="col-sm-6 position-relative">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Nhập lại MK" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check small">
+                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                        <label class="form-check-label text-muted" for="termsCheck">
+                            Tôi đồng ý với <a href="#" class="text-decoration-none fw-bold">Điều khoản sử dụng</a> & <a href="#" class="text-decoration-none fw-bold">Chính sách bảo mật</a>.
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-register">Đăng Ký Tài Khoản</button>
+                </div>
+
+                <div class="divider">Hoặc đăng ký với</div>
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <a href="#" class="social-btn"><i class="fab fa-google"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                </div>
+
+                <div class="text-center small">
+                    <span class="text-muted">Đã có tài khoản?</span>
+                    <a href="login.html" class="text-decoration-none fw-bold text-primary ms-1">Đăng nhập ngay</a>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="../index.html" class="text-decoration-none small text-muted">
+                        <i class="fas fa-arrow-left me-1"></i> Về trang chủ
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Lấy giá trị
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('confirmPassword').value;
+            const name = document.getElementById('fullName').value;
+
+            // 1. Validate Mật khẩu khớp
+            if (p1 !== p2) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Mật khẩu nhập lại không khớp!',
+                });
+                return;
+            }
+
+            // 2. Validate độ dài (Ví dụ)
+            if (p1.length < 6) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Mật khẩu yếu',
+                    text: 'Mật khẩu phải có ít nhất 6 ký tự.',
+                });
+                return;
+            }
+
+            // 3. Giả lập gửi API đăng ký
+            let timerInterval;
+            Swal.fire({
+                title: 'Đang tạo tài khoản...',
+                html: 'Vui lòng chờ trong giây lát.',
+                timer: 1500,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            }).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đăng ký thành công!',
+                    text: 'Chào mừng ' + name + '! Vui lòng đăng nhập để tiếp tục.',
+                    confirmButtonText: 'Đến trang Đăng nhập'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'login.html';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
