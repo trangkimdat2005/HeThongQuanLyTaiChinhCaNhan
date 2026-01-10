@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Hệ Thống Quản Lý Tài Chính</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <style>
+        /* --- CSS RIÊNG CHO ADMIN --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+            /* Màu nền xám nhẹ */
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR STYLE */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 260px;
+            margin-left: -260px;
+            transition: margin .25s ease-out;
+            background-color: #212529;
+            /* Màu đen xám chuyên nghiệp */
+            position: fixed;
+            z-index: 1000;
+        }
+
+        #sidebar-wrapper .sidebar-heading {
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: #1a1e21;
+            /* Đậm hơn chút để tách biệt logo */
+            text-align: center;
+            border-bottom: 1px solid #373b3e;
+        }
+
+        #sidebar-wrapper .list-group {
+            width: 260px;
+        }
+
+        .list-group-item {
+            background-color: transparent;
+            color: #aeb4b9;
+            /* Màu chữ xám nhạt */
+            border: none;
+            padding: 14px 25px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .list-group-item:hover {
+            background-color: #2c3034;
+            color: #fff;
+        }
+
+        /* Class active để đánh dấu đang ở trang nào */
+        .list-group-item.active-menu {
+            background-color: #2c3034;
+            color: #3b7ddd;
+            /* Màu xanh nổi bật */
+            border-left: 4px solid #3b7ddd;
+            font-weight: 600;
+        }
+
+        .list-group-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* MAIN CONTENT STYLE */
+        #page-content-wrapper {
+            width: 100%;
+            transition: margin .25s ease-out;
+        }
+
+        /* NAVBAR STYLE */
+        .navbar-admin {
+            background-color: #fff;
+            box-shadow: 0 0.1rem 0.5rem rgba(0, 0, 0, 0.05);
+            padding: 12px 20px;
+        }
+
+        /* Responsive Logic */
+        @media (min-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: 0;
+            }
+
+            #page-content-wrapper {
+                margin-left: 260px;
+            }
+
+            /* Khi bấm nút toggle trên PC thì ẩn menu đi */
+            body.sb-sidenav-toggled #sidebar-wrapper {
+                margin-left: -260px;
+            }
+
+            body.sb-sidenav-toggled #page-content-wrapper {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <style>
+        /* Box Icon lớn ở phần Preview */
+        .icon-box-lg {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        /* Tùy chỉnh input màu cho đẹp hơn */
+        .form-control-color {
+            width: 60px;
+            height: 38px;
+            padding: 0.2rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            cursor: pointer;
+        }
+
+        /* Hiệu ứng chọn Radio Button */
+        .btn-check:checked+.btn-outline-danger {
+            background-color: #fff5f5;
+            color: #dc3545;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 1px #dc3545;
+        }
+
+        .btn-check:checked+.btn-outline-success {
+            background-color: #f0fff4;
+            color: #198754;
+            border-color: #198754;
+            box-shadow: 0 0 0 1px #198754;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading text-uppercase">
+                <i class="fas fa-coins text-primary me-2"></i> QLTC Admin
+            </div>
+            <div class="list-group list-group-flush mt-3">
+                <a href="/admin/dashboard.html" class="list-group-item list-group-item-action active-menu">
+                    <i class="fas fa-tachometer-alt"></i> Tổng Quan
+                </a>
+
+                <a href="/admin/users.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-users"></i> Người Dùng
+                </a>
+
+                <a href="/admin/categories.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-layer-group"></i> Danh Mục Gốc
+                </a>
+
+                <a href="/admin/categories.html"
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-headset"></i> Hỗ Trợ</span>
+                    <span class="badge bg-danger rounded-pill">3</span>
+                </a>
+
+                <a href="/admin/setting.html"
+                    class="list-group-item list-group-item-action mt-4 border-top border-secondary pt-3">
+                    <i class="fas fa-cog"></i> Cấu Hình
+                </a>
+
+                <a href="/admin/historyerror.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-file-alt"></i> Nhật Ký Lỗi
+                </a>
+
+                <a href="/admin/logout.html" onclick="logoutAdmin()"
+                    class="list-group-item list-group-item-action text-danger mt-3">
+                    <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand navbar-admin">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <button class="btn btn-light border" id="sidebarToggle">
+                        <i class="fas fa-bars text-secondary"></i>
+                    </button>
+
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            <span class="me-2 text-dark fw-bold small d-none d-sm-block">Administrator</span>
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=3b7ddd&color=fff"
+                                class="rounded-circle" width="36" height="36">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ</a>
+                            </li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2 text-muted"></i>Đổi mật
+                                    khẩu</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logoutAdmin()">Thoát</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4" id="main-content">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-0">Thêm Danh Mục Mới</h3>
+                        <p class="text-muted small mb-0">Tạo nhóm chi tiêu/thu nhập mặc định cho hệ thống</p>
+                    </div>
+                    <a href="/admin/categories.html" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div
+                                class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                                <h6 class="fw-bold text-muted mb-4">Xem Trước Hiển Thị</h6>
+
+                                <div class="mobile-preview p-3 rounded-4 shadow-sm"
+                                    style="width: 280px; background-color: #fff; border: 1px solid #eee;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div id="previewBox" class="icon-box-lg me-3"
+                                                style="background-color: #dc3545;">
+                                                <i id="previewIcon" class="fas fa-utensils text-white fa-lg"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <h6 class="fw-bold mb-0 text-dark" id="previewName">Tên danh mục</h6>
+                                                <small class="text-muted" id="previewType">Chi tiêu</small>
+                                            </div>
+                                        </div>
+                                        <div class="fw-bold text-danger">- 50.000 đ</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-muted small fst-italic">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Đây là cách danh mục xuất hiện trong lịch sử giao dịch.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3 border-bottom-0">
+                                <h5 class="fw-bold text-primary m-0">Thông Tin Chi Tiết</h5>
+                            </div>
+                            <div class="card-body pt-0">
+                                <form id="createCategoryForm">
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small">Tên Danh Mục <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-lg" id="catName"
+                                            placeholder="Ví dụ: Ăn uống, Xăng xe..." required>
+                                        <div class="form-text">Tên ngắn gọn, dễ hiểu (Tối đa 50 ký tự)</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small">Loại Giao Dịch <span
+                                                class="text-danger">*</span></label>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <input type="radio" class="btn-check" name="catType" id="typeExpense"
+                                                    value="Expense" checked>
+                                                <label
+                                                    class="btn btn-outline-danger w-100 p-3 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                                    for="typeExpense">
+                                                    <i class="fas fa-shopping-cart"></i> Khoản Chi (Expense)
+                                                </label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="radio" class="btn-check" name="catType" id="typeIncome"
+                                                    value="Income">
+                                                <label
+                                                    class="btn btn-outline-success w-100 p-3 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                                                    for="typeIncome">
+                                                    <i class="fas fa-money-bill-wave"></i> Khoản Thu (Income)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-4">
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <label class="form-label fw-bold small">Màu Sắc (Color)</label>
+                                            <div class="d-flex align-items-center">
+                                                <input type="color" class="form-control form-control-color shadow-sm"
+                                                    id="catColor" value="#dc3545" title="Chọn màu">
+                                                <span class="ms-2 text-muted small" id="colorCode">#dc3545</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold small">Biểu Tượng (Icon)</label>
+                                            <select class="form-select" id="catIcon">
+                                                <option value="fa-question">-- Chọn biểu tượng --</option>
+                                                <optgroup label="Chi Tiêu">
+                                                    <option value="fa-utensils" selected>Ăn uống (Utensils)</option>
+                                                    <option value="fa-shopping-cart">Mua sắm (Shopping)</option>
+                                                    <option value="fa-home">Nhà cửa (Home)</option>
+                                                    <option value="fa-car">Di chuyển (Car)</option>
+                                                    <option value="fa-pills">Y tế (Health)</option>
+                                                    <option value="fa-graduation-cap">Giáo dục (Edu)</option>
+                                                    <option value="fa-gamepad">Giải trí (Game)</option>
+                                                </optgroup>
+                                                <optgroup label="Thu Nhập">
+                                                    <option value="fa-money-bill">Tiền lương (Salary)</option>
+                                                    <option value="fa-gift">Thưởng/Quà (Gift)</option>
+                                                    <option value="fa-chart-line">Đầu tư (Invest)</option>
+                                                    <option value="fa-hand-holding-usd">Được cho/tặng</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <hr class="text-muted opacity-25">
+
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-light me-2" onclick="resetForm()">Làm
+                                            mới</button>
+                                        <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                                            <i class="fas fa-save me-2"></i>Lưu Danh Mục
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <footer class="bg-white p-3 text-center text-muted small border-top mt-auto">
+                &copy; 2026 Hệ Thống Quản Lý Tài Chính. All rights reserved.
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // 1. Logic ẩn hiện Sidebar
+        const sidebarToggle = document.body.querySelector('#sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', event => {
+                event.preventDefault();
+                document.body.classList.toggle('sb-sidenav-toggled');
+            });
+        }
+
+        // 2. Logic Đăng xuất
+        function logoutAdmin() {
+            Swal.fire({
+                title: 'Bạn muốn đăng xuất?',
+                text: "Kết thúc phiên làm việc của Admin.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Đăng xuất',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Đã đăng xuất', '', 'success');
+                    // Chỗ này sau này sẽ code chuyển hướng về trang Login
+                }
+            })
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+
+            // 1. XỬ LÝ LIVE PREVIEW (CẬP NHẬT TỨC THÌ)
+
+            // Cập nhật Tên
+            $('#catName').on('input', function () {
+                var val = $(this).val();
+                $('#previewName').text(val || 'Tên danh mục');
+            });
+
+            // Cập nhật Loại (Thu/Chi)
+            $('input[name="catType"]').on('change', function () {
+                var type = $(this).val();
+                if (type === 'Income') {
+                    $('#previewType').text('Thu nhập');
+                    // Gợi ý màu xanh nếu chọn Thu
+                    $('#catColor').val('#198754').trigger('input');
+                } else {
+                    $('#previewType').text('Chi tiêu');
+                    // Gợi ý màu đỏ nếu chọn Chi
+                    $('#catColor').val('#dc3545').trigger('input');
+                }
+            });
+
+            // Cập nhật Màu sắc
+            $('#catColor').on('input', function () {
+                var color = $(this).val();
+                $('#previewBox').css('background-color', color);
+                $('#colorCode').text(color); // Hiện mã hex bên cạnh
+            });
+
+            // Cập nhật Icon
+            $('#catIcon').on('change', function () {
+                var icon = $(this).val();
+                $('#previewIcon').attr('class', 'fas text-white fa-lg ' + icon);
+            });
+
+
+            // 2. XỬ LÝ SUBMIT FORM
+            $('#createCategoryForm').on('submit', function (e) {
+                e.preventDefault();
+
+                var name = $('#catName').val();
+                var type = $('input[name="catType"]:checked').val();
+
+                // Giả lập Loading
+                let timerInterval
+                Swal.fire({
+                    title: 'Đang lưu dữ liệu...',
+                    html: 'Đang tạo danh mục <b>' + name + '</b>',
+                    timer: 1500,
+                    timerProgressBar: true,
+                    didOpen: () => { Swal.showLoading() },
+                }).then((result) => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Đã thêm danh mục mới vào hệ thống.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Về danh sách',
+                        cancelButtonText: 'Thêm tiếp'
+                    }).then((res) => {
+                        if (res.isConfirmed) {
+                            window.location.href = '/admin/categories.html';
+                        } else {
+                            resetForm();
+                        }
+                    })
+                });
+            });
+        });
+
+        // Hàm Reset
+        function resetForm() {
+            $('#createCategoryForm')[0].reset();
+            // Reset về mặc định
+            $('#previewName').text('Tên danh mục');
+            $('#previewType').text('Chi tiêu');
+            $('#catColor').val('#dc3545').trigger('input');
+            $('#catIcon').val('fa-utensils').trigger('change');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyMaster - User</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Màu nền sáng dịu */
+            overflow-x: hidden;
+        }
+
+        /* --- 1. LAYOUT WRAPPER (FLEXBOX) --- */
+        #wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- 2. SIDEBAR STYLE (MENU TRÁI) --- */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 260px; /* Độ rộng cố định */
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            transition: margin 0.3s ease;
+            flex-shrink: 0; /* Không cho co lại */
+            z-index: 1000;
+        }
+
+        /* Header của Sidebar */
+        .sidebar-heading {
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #4e73df;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* Group các item trong menu */
+        .list-group {
+            padding: 0; /* Xóa padding mặc định */
+        }
+
+        /* Style cho từng NÚT MENU (ITEM) */
+        .list-group-item {
+            border: none;
+            border-radius: 0; /* Vuông vức, không bo tròn */
+            padding: 16px 25px;
+            font-weight: 500;
+            color: #6b7280; /* Màu chữ xám */
+            background-color: transparent;
+            transition: all 0.2s;
+            margin: 0; /* Tràn viền */
+            border-left: 5px solid transparent; /* Tạo viền trái ẩn */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Hiệu ứng khi di chuột vào */
+        .list-group-item:hover {
+            background-color: #f9fafb;
+            color: #4e73df;
+            text-decoration: none;
+        }
+
+        /* Trạng thái ĐANG CHỌN (ACTIVE) */
+        .list-group-item.active-menu {
+            background-color: #eff6ff; /* Nền xanh rất nhạt */
+            color: #2563eb; /* Chữ xanh đậm */
+            font-weight: 700;
+            border-left: 5px solid #2563eb; /* Viền trái màu xanh */
+        }
+
+        /* Icon trong menu */
+        .list-group-item i {
+            width: 25px; /* Cố định độ rộng để thẳng hàng */
+            text-align: center;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Tiêu đề nhóm nhỏ (TÀI CHÍNH, CÁ NHÂN...) */
+        .sidebar-divider {
+            padding: 20px 25px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- 3. MAIN CONTENT (BÊN PHẢI) --- */
+        #page-content-wrapper {
+            flex-grow: 1; /* Chiếm hết khoảng trống còn lại */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Cuộn dọc nội dung */
+            background-color: #f3f4f6;
+        }
+
+        /* Thanh Navbar trên cùng */
+        .navbar-user {
+            background-color: #fff;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        /* Avatar nhỏ */
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -260px; /* Ẩn menu đi */
+                position: fixed;
+                height: 100%;
+                box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            /* Class này được JS thêm vào để hiện menu */
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: 0;
+            }
+        }
+
+        /* Desktop: Class này để ẩn menu */
+        @media (min-width: 769px) {
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: -260px;
+            }
+        }
+    </style>
+    <style>
+        /* Card Ví - Hiệu ứng hover nổi lên */
+.wallet-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.wallet-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Icon tròn trong Card */
+.wallet-icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 15px;
+}
+
+/* Nút 3 chấm (Action) trên Card */
+.wallet-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.wallet-card:hover .wallet-actions {
+    opacity: 1;
+}
+
+/* Màu nền nhẹ cho từng loại ví */
+.bg-wallet-bank { background: linear-gradient(135deg, #ffffff 0%, #f3f6ff 100%); border-left: 5px solid #4e73df; }
+.bg-wallet-cash { background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%); border-left: 5px solid #1cc88a; }
+.bg-wallet-ewallet { background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%); border-left: 5px solid #e74a3b; }
+.bg-wallet-credit { background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%); border-left: 5px solid #f6c23e; }
+    </style>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <i class="fas fa-coins me-2"></i> MoneyMaster
+            </div>
+
+            <div class="list-group list-group-flush">
+                
+                <a href="/user/dashboard.html" class="list-group-item list-group-item-action active-menu">
+                    <i class="fas fa-tachometer-alt"></i> Tổng Quan
+                </a>
+
+                <div class="sidebar-divider">Quản lý tài chính</div>
+
+                <a href="/user/transactions.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-file-invoice-dollar"></i> Sổ Thu Chi
+                </a>
+                <a href="/user/wallets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-wallet"></i> Ví Của Tôi
+                </a>
+                <a href="/user/budgets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chart-pie"></i> Ngân Sách
+                </a>
+                <a href="/user/goals.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-bullseye"></i> Mục Tiêu
+                </a>
+
+                <div class="sidebar-divider">Cá nhân</div>
+
+                <a href="/user/categories.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-tags"></i> Danh Mục
+                </a>
+                <a href="/user/tickets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-headset"></i> Hỗ Trợ
+                </a>
+                <a href="/user/profile.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-user-circle"></i> Hồ Sơ
+                </a>
+            </div>
+
+            <div class="mt-auto p-3 border-top bg-white">
+                <a href="#" onclick="logoutUser()" class="btn btn-outline-danger w-100 fw-bold shadow-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i> Đăng Xuất
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand navbar-user">
+                <div class="container-fluid">
+                    <button class="btn btn-light text-primary border" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <div class="d-none d-md-block ms-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm...">
+                            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <a class="nav-link text-secondary position-relative" href="#" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell fa-lg"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">3+</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><h6 class="dropdown-header bg-primary text-white">Thông báo mới</h6></li>
+                                <li><a class="dropdown-item small py-2" href="#">Lương tháng 1 đã về!</a></li>
+                                <li><a class="dropdown-item small py-2" href="#">Cảnh báo: Sắp hết ngân sách ăn uống.</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="vr h-100 mx-2 text-secondary"></div>
+
+                        <div class="dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <span class="me-2 d-none d-lg-block text-dark fw-bold small">Nguyễn Văn A</span>
+                                <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=4e73df&color=fff" class="avatar-img rounded-circle">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><a class="dropdown-item" href="/user/profile.html"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
+                                <li><a class="dropdown-item" href="/user/categories.html"><i class="fas fa-cog me-2 text-muted"></i>Cài đặt</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4 py-4" id="main-content">
+                
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Ví Của Tôi</h3>
+        <p class="text-muted small mb-0">Quản lý các nguồn tiền: Tiền mặt, Ngân hàng, Ví điện tử...</p>
+    </div>
+    <button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openWalletModal('add')">
+        <i class="fas fa-plus me-2"></i> Thêm Ví Mới
+    </button>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm text-white overflow-hidden" style="background: linear-gradient(to right, #4e73df, #224abe);">
+            <div class="card-body p-4 position-relative">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="text-white-50 text-uppercase small fw-bold mb-1">Tổng tài sản hiện có</h5>
+                        <h1 class="display-5 fw-bold mb-0" id="totalBalanceDisplay">0 đ</h1>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <i class="fas fa-wallet fa-4x text-white opacity-25"></i>
+                    </div>
+                </div>
+                <div class="position-absolute top-0 end-0 opacity-10 p-3">
+                    <i class="fas fa-coins fa-6x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4" id="walletList">
+    </div>
+
+<div class="modal fade" id="walletModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary" id="modalTitle">Thêm Ví Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <form id="walletForm">
+                    <input type="hidden" id="walletID">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Tên Ví <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="walletName" placeholder="VD: Vietcombank, Tiền mặt..." required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Loại Ví</label>
+                            <select class="form-select" id="walletType" onchange="autoSelectIcon()">
+                                <option value="Cash">Tiền mặt (Cash)</option>
+                                <option value="Bank">Ngân hàng (Bank)</option>
+                                <option value="E-Wallet">Ví điện tử (Momo/ZaloPay)</option>
+                                <option value="Credit Card">Thẻ tín dụng (Credit)</option>
+                                <option value="Other">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Số Dư Ban Đầu</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control fw-bold" id="initialBalance" placeholder="0" required>
+                                <span class="input-group-text bg-light text-muted small">đ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Biểu Tượng</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-wallet" id="iconPreview"></i></span>
+                            <select class="form-select" id="walletIcon" onchange="updateIconPreview()">
+                                <option value="fa-wallet">Ví thường</option>
+                                <option value="fa-university">Ngân hàng</option>
+                                <option value="fa-credit-card">Thẻ tín dụng</option>
+                                <option value="fa-mobile-alt">Điện thoại / E-Wallet</option>
+                                <option value="fa-piggy-bank">Heo đất</option>
+                                <option value="fa-money-bill-wave">Tiền mặt</option>
+                                <option value="fa-btc">Tiền ảo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border small text-muted">
+                        <i class="fas fa-info-circle me-1"></i> Số dư hiện tại sẽ được tự động tính toán dựa trên "Số dư ban đầu" + "Các giao dịch".
+                    </div>
+
+                    <div class="text-end mt-4 pt-2 border-top">
+                        <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Lưu Ví
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+            </div>
+
+            <footer class="mt-auto bg-white p-3 text-center text-muted small border-top">
+                &copy; 2026 MoneyMaster. All rights reserved.
+            </footer>
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Toggle Sidebar
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+        // Logout
+        function logoutUser() {
+            Swal.fire({
+                title: 'Đăng xuất?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#4e73df',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Thoát'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Đã đăng xuất', '', 'success');
+                }
+            })
+        }
+    </script>
+    <script>
+        // Dữ liệu giả (Mock Wallets)
+var mockWallets = [
+    { id: 1, name: "Tiền mặt", type: "Cash", balance: 4500000, initial: 500000, icon: "fa-wallet" },
+    { id: 2, name: "Vietcombank", type: "Bank", balance: 15000000, initial: 2000000, icon: "fa-university" },
+    { id: 3, name: "Momo", type: "E-Wallet", balance: 500000, initial: 0, icon: "fa-mobile-alt" },
+    { id: 4, name: "VISA Credit", type: "Credit Card", balance: -2500000, initial: 0, icon: "fa-credit-card" }
+];
+
+var modalInstance;
+
+$(document).ready(function() {
+    renderWallets();
+});
+
+// 1. RENDER DANH SÁCH VÍ
+function renderWallets() {
+    var html = '';
+    var totalBalance = 0;
+
+    mockWallets.forEach(w => {
+        totalBalance += w.balance;
+
+        // Xác định màu sắc & class dựa trên loại ví
+        var bgClass = 'bg-wallet-bank'; // Default
+        var iconBg = '#4e73df'; 
+        
+        if (w.type === 'Cash') { bgClass = 'bg-wallet-cash'; iconBg = '#1cc88a'; }
+        else if (w.type === 'E-Wallet') { bgClass = 'bg-wallet-ewallet'; iconBg = '#e74a3b'; }
+        else if (w.type === 'Credit Card') { bgClass = 'bg-wallet-credit'; iconBg = '#f6c23e'; }
+
+        // Format tiền tệ
+        var balanceFormatted = w.balance.toLocaleString('vi-VN') + ' đ';
+        var balanceColor = w.balance >= 0 ? 'text-dark' : 'text-danger';
+
+        html += `
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm wallet-card h-100 ${bgClass}">
+                <div class="card-body">
+                    <div class="dropdown wallet-actions">
+                        <a href="#" class="text-muted" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></a>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                            <li><a class="dropdown-item" href="#" onclick="openWalletModal('edit', ${w.id})"><i class="fas fa-edit me-2 text-primary"></i>Sửa</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteWallet(${w.id})"><i class="fas fa-trash-alt me-2"></i>Xóa</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="wallet-icon-circle shadow-sm" style="background-color: ${iconBg};">
+                        <i class="fas ${w.icon}"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-1">${w.name}</h5>
+                    <span class="badge bg-white border text-muted mb-3">${w.type}</span>
+                    
+                    <div class="mt-2">
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Số dư hiện tại</small>
+                        <h4 class="fw-bold mb-0 ${balanceColor}">${balanceFormatted}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+
+    // Thêm nút "Thêm ví mới" dạng Card (Optional)
+    html += `
+    <div class="col-xl-3 col-md-6">
+        <div class="card shadow-sm h-100 border-2 border-dashed bg-light d-flex align-items-center justify-content-center" 
+             style="border-style: dashed; cursor: pointer; min-height: 220px;" onclick="openWalletModal('add')">
+            <div class="text-center text-muted">
+                <i class="fas fa-plus-circle fa-3x mb-2 text-primary opacity-50"></i>
+                <h6 class="fw-bold">Thêm Ví Mới</h6>
+            </div>
+        </div>
+    </div>
+    `;
+
+    $('#walletList').html(html);
+    $('#totalBalanceDisplay').text(totalBalance.toLocaleString('vi-VN') + ' đ');
+}
+
+// 2. MỞ MODAL
+function openWalletModal(mode, id = null) {
+    var myModalEl = document.getElementById('walletModal');
+    modalInstance = new bootstrap.Modal(myModalEl);
+
+    if (mode === 'add') {
+        $('#modalTitle').text('Thêm Ví Mới');
+        $('#walletForm')[0].reset();
+        $('#walletID').val('');
+        $('#walletIcon').val('fa-wallet'); // Default
+        updateIconPreview();
+    } else {
+        var wallet = mockWallets.find(w => w.id === id);
+        if (wallet) {
+            $('#modalTitle').text('Cập Nhật Ví');
+            $('#walletID').val(wallet.id);
+            $('#walletName').val(wallet.name);
+            $('#walletType').val(wallet.type);
+            $('#initialBalance').val(wallet.initial);
+            $('#walletIcon').val(wallet.icon);
+            updateIconPreview();
+        }
+    }
+    modalInstance.show();
+}
+
+// 3. LOGIC TỰ ĐỘNG CHỌN ICON THEO LOẠI
+function autoSelectIcon() {
+    var type = $('#walletType').val();
+    var iconSelect = $('#walletIcon');
+    
+    if (type === 'Cash') iconSelect.val('fa-wallet');
+    else if (type === 'Bank') iconSelect.val('fa-university');
+    else if (type === 'E-Wallet') iconSelect.val('fa-mobile-alt');
+    else if (type === 'Credit Card') iconSelect.val('fa-credit-card');
+    
+    updateIconPreview(); // Cập nhật hình ảnh icon bên cạnh
+}
+
+function updateIconPreview() {
+    var iconClass = $('#walletIcon').val();
+    $('#iconPreview').attr('class', 'fas ' + iconClass);
+}
+
+// 4. LƯU VÍ
+$('#walletForm').on('submit', function(e) {
+    e.preventDefault();
+    modalInstance.hide();
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'Thông tin ví đã được lưu!',
+        timer: 1500,
+        showConfirmButton: false
+    }).then(() => {
+        // Trong thực tế: Reload lại data từ server
+        // Ở đây mình reload trang demo
+        location.reload(); 
+    });
+});
+
+// 5. XÓA VÍ
+function deleteWallet(id) {
+    Swal.fire({
+        title: 'Xóa ví này?',
+        text: "Cảnh báo: Tất cả giao dịch thuộc ví này cũng sẽ bị ẩn!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Xóa luôn'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire('Đã xóa!', '', 'success');
+        }
+    })
+}
+    </script>
+</body>
+
+</html>

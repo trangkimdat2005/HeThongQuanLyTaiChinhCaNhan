@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyMaster - User</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Màu nền sáng dịu */
+            overflow-x: hidden;
+        }
+
+        /* --- 1. LAYOUT WRAPPER (FLEXBOX) --- */
+        #wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- 2. SIDEBAR STYLE (MENU TRÁI) --- */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 260px; /* Độ rộng cố định */
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            transition: margin 0.3s ease;
+            flex-shrink: 0; /* Không cho co lại */
+            z-index: 1000;
+        }
+
+        /* Header của Sidebar */
+        .sidebar-heading {
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #4e73df;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* Group các item trong menu */
+        .list-group {
+            padding: 0; /* Xóa padding mặc định */
+        }
+
+        /* Style cho từng NÚT MENU (ITEM) */
+        .list-group-item {
+            border: none;
+            border-radius: 0; /* Vuông vức, không bo tròn */
+            padding: 16px 25px;
+            font-weight: 500;
+            color: #6b7280; /* Màu chữ xám */
+            background-color: transparent;
+            transition: all 0.2s;
+            margin: 0; /* Tràn viền */
+            border-left: 5px solid transparent; /* Tạo viền trái ẩn */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Hiệu ứng khi di chuột vào */
+        .list-group-item:hover {
+            background-color: #f9fafb;
+            color: #4e73df;
+            text-decoration: none;
+        }
+
+        /* Trạng thái ĐANG CHỌN (ACTIVE) */
+        .list-group-item.active-menu {
+            background-color: #eff6ff; /* Nền xanh rất nhạt */
+            color: #2563eb; /* Chữ xanh đậm */
+            font-weight: 700;
+            border-left: 5px solid #2563eb; /* Viền trái màu xanh */
+        }
+
+        /* Icon trong menu */
+        .list-group-item i {
+            width: 25px; /* Cố định độ rộng để thẳng hàng */
+            text-align: center;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Tiêu đề nhóm nhỏ (TÀI CHÍNH, CÁ NHÂN...) */
+        .sidebar-divider {
+            padding: 20px 25px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- 3. MAIN CONTENT (BÊN PHẢI) --- */
+        #page-content-wrapper {
+            flex-grow: 1; /* Chiếm hết khoảng trống còn lại */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Cuộn dọc nội dung */
+            background-color: #f3f4f6;
+        }
+
+        /* Thanh Navbar trên cùng */
+        .navbar-user {
+            background-color: #fff;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        /* Avatar nhỏ */
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -260px; /* Ẩn menu đi */
+                position: fixed;
+                height: 100%;
+                box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            /* Class này được JS thêm vào để hiện menu */
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: 0;
+            }
+        }
+
+        /* Desktop: Class này để ẩn menu */
+        @media (min-width: 769px) {
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: -260px;
+            }
+        }
+    </style>
+    <style>
+        /* Nút Upload Avatar nổi */
+.avatar-upload-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 35px;
+    height: 35px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s;
+}
+.avatar-upload-btn:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.1);
+}
+
+/* Tab active đẹp hơn */
+.nav-tabs .nav-link { color: #6c757d; border: none; }
+.nav-tabs .nav-link.active {
+    color: #4e73df;
+    border-bottom: 2px solid #4e73df;
+    background: none;
+}
+.nav-tabs .nav-link:hover { border: none; color: #4e73df; }
+    </style>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <i class="fas fa-coins me-2"></i> MoneyMaster
+            </div>
+
+            <div class="list-group list-group-flush">
+                
+                <a href="/user/dashboard.html" class="list-group-item list-group-item-action active-menu">
+                    <i class="fas fa-tachometer-alt"></i> Tổng Quan
+                </a>
+
+                <div class="sidebar-divider">Quản lý tài chính</div>
+
+                <a href="/user/transactions.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-file-invoice-dollar"></i> Sổ Thu Chi
+                </a>
+                <a href="/user/wallets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-wallet"></i> Ví Của Tôi
+                </a>
+                <a href="/user/budgets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chart-pie"></i> Ngân Sách
+                </a>
+                <a href="/user/goals.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-bullseye"></i> Mục Tiêu
+                </a>
+
+                <div class="sidebar-divider">Cá nhân</div>
+
+                <a href="/user/categories.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-tags"></i> Danh Mục
+                </a>
+                <a href="/user/tickets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-headset"></i> Hỗ Trợ
+                </a>
+                <a href="/user/profile.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-user-circle"></i> Hồ Sơ
+                </a>
+            </div>
+
+            <div class="mt-auto p-3 border-top bg-white">
+                <a href="#" onclick="logoutUser()" class="btn btn-outline-danger w-100 fw-bold shadow-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i> Đăng Xuất
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand navbar-user">
+                <div class="container-fluid">
+                    <button class="btn btn-light text-primary border" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <div class="d-none d-md-block ms-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm...">
+                            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <a class="nav-link text-secondary position-relative" href="#" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell fa-lg"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">3+</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><h6 class="dropdown-header bg-primary text-white">Thông báo mới</h6></li>
+                                <li><a class="dropdown-item small py-2" href="#">Lương tháng 1 đã về!</a></li>
+                                <li><a class="dropdown-item small py-2" href="#">Cảnh báo: Sắp hết ngân sách ăn uống.</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="vr h-100 mx-2 text-secondary"></div>
+
+                        <div class="dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <span class="me-2 d-none d-lg-block text-dark fw-bold small">Nguyễn Văn A</span>
+                                <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=4e73df&color=fff" class="avatar-img rounded-circle">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><a class="dropdown-item" href="/user/profile.html"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
+                                <li><a class="dropdown-item" href="/user/categories.html"><i class="fas fa-cog me-2 text-muted"></i>Cài đặt</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4 py-4" id="main-content">
+                
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Hồ Sơ Của Tôi</h3>
+        <p class="text-muted small mb-0">Quản lý thông tin tài khoản và bảo mật</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm text-center h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                
+                <div class="position-relative mb-3">
+                    <img src="https://ui-avatars.com/api/?name=User&background=random" class="rounded-circle border border-4 border-light shadow-sm" width="130" height="130" id="profileAvatar" style="object-fit: cover;">
+                    
+                    <label for="uploadAvatar" class="avatar-upload-btn shadow-sm" title="Đổi ảnh đại diện">
+                        <i class="fas fa-camera text-primary"></i>
+                        <input type="file" id="uploadAvatar" class="d-none" accept="image/*">
+                    </label>
+                </div>
+
+                <h4 class="fw-bold text-dark mb-1" id="displayFullName">Loading...</h4>
+                <div class="mb-3">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill border border-primary border-opacity-25" id="displayRole">User</span>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 w-100 px-3 mt-2">
+                    <div class="text-center px-3 border-end">
+                        <div class="small text-muted text-uppercase fw-bold">Tham gia</div>
+                        <div class="fw-bold text-dark" id="displayJoinDate">...</div>
+                    </div>
+                    <div class="text-center px-3">
+                        <div class="small text-muted text-uppercase fw-bold">Online cuối</div>
+                        <div class="fw-bold text-success" id="displayLastLogin">...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <ul class="nav nav-tabs card-header-tabs" id="profileTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button">
+                            <i class="fas fa-user-edit me-2"></i>Thông Tin Cá Nhân
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold text-danger" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button">
+                            <i class="fas fa-shield-alt me-2"></i>Bảo Mật & Mật Khẩu
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body">
+                <div class="tab-content" id="profileTabContent">
+                    
+                    <div class="tab-pane fade show active" id="info" role="tabpanel">
+                        <form id="updateInfoForm">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">Email đăng nhập (Không thể sửa)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
+                                    <input type="email" class="form-control bg-light border-start-0" id="userEmail" readonly>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Họ và tên (FullName)</label>
+                                <input type="text" class="form-control fw-bold" id="fullName">
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Ngày sinh (DateOfBirth)</label>
+                                    <input type="date" class="form-control" id="dob">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Quốc gia (Country)</label>
+                                    <input type="text" class="form-control" id="country">
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Thành phố (City)</label>
+                                    <input type="text" class="form-control" id="city">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Địa chỉ chi tiết (Address)</label>
+                                    <input type="text" class="form-control" id="address">
+                                </div>
+                            </div>
+
+                            <div class="text-end pt-3 border-top">
+                                <button type="submit" class="btn btn-primary fw-bold shadow-sm px-4">
+                                    <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="security" role="tabpanel">
+                        <form id="changePassForm">
+                            <div class="alert alert-warning border-0 d-flex align-items-center mb-4" role="alert">
+                                <i class="fas fa-lock me-3 fs-4"></i>
+                                <div>
+                                    <div class="fw-bold">Lưu ý quan trọng</div>
+                                    <small>Mật khẩu mạnh cần có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Mật khẩu hiện tại</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="currentPass" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePass('currentPass')"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Mật khẩu mới</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="newPass" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePass('newPass')"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold">Xác nhận mật khẩu mới</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="confirmPass" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePass('confirmPass')"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="text-end pt-3 border-top">
+                                <button type="submit" class="btn btn-danger fw-bold shadow-sm px-4">
+                                    <i class="fas fa-key me-2"></i>Cập Nhật Mật Khẩu
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            </div>
+
+            <footer class="mt-auto bg-white p-3 text-center text-muted small border-top">
+                &copy; 2026 MoneyMaster. All rights reserved.
+            </footer>
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Toggle Sidebar
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+        // Logout
+        function logoutUser() {
+            Swal.fire({
+                title: 'Đăng xuất?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#4e73df',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Thoát'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Đã đăng xuất', '', 'success');
+                }
+            })
+        }
+    </script>
+    <script>
+        // 1. MOCK DATA (Giống record trong Users table)
+var currentUser = {
+    UserID: "user-01",
+    Email: "nguyenvana@test.com",
+    FullName: "Nguyễn Văn A",
+    AvatarUrl: "https://ui-avatars.com/api/?name=Nguyen+Van+A&background=4e73df&color=fff",
+    Address: "123 Đường Lê Lợi",
+    City: "Hồ Chí Minh",
+    Country: "Việt Nam",
+    DateOfBirth: "1995-05-15",
+    Role: "User",
+    LastLogin: "2026-01-11 08:30:00",
+    CreatedAt: "2025-12-01"
+};
+
+$(document).ready(function() {
+    loadProfile();
+});
+
+// 2. LOAD DATA VÀO FORM
+function loadProfile() {
+    // Cột Trái (Summary)
+    $('#profileAvatar').attr('src', currentUser.AvatarUrl);
+    $('#displayFullName').text(currentUser.FullName);
+    $('#displayRole').text(currentUser.Role);
+    
+    // Format ngày hiển thị cho đẹp
+    var joinDate = new Date(currentUser.CreatedAt).toLocaleDateString('vi-VN');
+    var lastLogin = new Date(currentUser.LastLogin).toLocaleDateString('vi-VN'); // Có thể dùng moment.js để hiện '2 phút trước'
+    
+    $('#displayJoinDate').text(joinDate);
+    $('#displayLastLogin').text("Vừa xong"); // Giả lập
+
+    // Cột Phải (Form Info)
+    $('#userEmail').val(currentUser.Email);
+    $('#fullName').val(currentUser.FullName);
+    $('#dob').val(currentUser.DateOfBirth);
+    $('#address').val(currentUser.Address);
+    $('#city').val(currentUser.City);
+    $('#country').val(currentUser.Country);
+}
+
+// 3. XỬ LÝ UPLOAD AVATAR (PREVIEW)
+$("#uploadAvatar").change(function() {
+    if (this.files && this.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            // Hiển thị ảnh vừa chọn lên thẻ img
+            $('#profileAvatar').attr('src', e.target.result);
+            // Đồng thời cập nhật avatar nhỏ trên navbar (nếu có id)
+            $('.avatar-img').attr('src', e.target.result); 
+        }
+        reader.readAsDataURL(this.files[0]);
+        
+        // Thực tế: Cần gọi API upload ảnh lên server, lấy URL lưu vào DB cột AvatarUrl
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Ảnh đại diện đã được cập nhật',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    }
+});
+
+// 4. CẬP NHẬT THÔNG TIN
+$('#updateInfoForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    // Lấy giá trị mới
+    var newName = $('#fullName').val();
+    
+    // Giả lập Loading
+    Swal.fire({
+        title: 'Đang lưu...',
+        didOpen: () => { Swal.showLoading() },
+        timer: 1000
+    }).then(() => {
+        // Update UI
+        $('#displayFullName').text(newName);
+        // Cập nhật tên trên Navbar (nếu có class .username-nav)
+        
+        Swal.fire('Thành công', 'Thông tin cá nhân đã được lưu.', 'success');
+    });
+});
+
+// 5. ĐỔI MẬT KHẨU
+$('#changePassForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    var current = $('#currentPass').val();
+    var newP = $('#newPass').val();
+    var confirmP = $('#confirmPass').val();
+
+    if(newP !== confirmP) {
+        Swal.fire('Lỗi', 'Mật khẩu xác nhận không khớp!', 'error');
+        return;
+    }
+
+    if(newP.length < 6) {
+         Swal.fire('Yếu', 'Mật khẩu phải có ít nhất 6 ký tự!', 'warning');
+         return;
+    }
+
+    Swal.fire({
+        title: 'Đang xử lý...',
+        didOpen: () => { Swal.showLoading() },
+        timer: 1500
+    }).then(() => {
+        $('#changePassForm')[0].reset();
+        Swal.fire('Thành công', 'Mật khẩu đã được thay đổi. Vui lòng đăng nhập lại vào lần sau.', 'success');
+    });
+});
+
+// Helper: Ẩn hiện pass
+function togglePass(id) {
+    var x = document.getElementById(id);
+    x.type = (x.type === "password") ? "text" : "password";
+}
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyMaster - User</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Màu nền sáng dịu */
+            overflow-x: hidden;
+        }
+
+        /* --- 1. LAYOUT WRAPPER (FLEXBOX) --- */
+        #wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- 2. SIDEBAR STYLE (MENU TRÁI) --- */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 260px; /* Độ rộng cố định */
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            transition: margin 0.3s ease;
+            flex-shrink: 0; /* Không cho co lại */
+            z-index: 1000;
+        }
+
+        /* Header của Sidebar */
+        .sidebar-heading {
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #4e73df;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* Group các item trong menu */
+        .list-group {
+            padding: 0; /* Xóa padding mặc định */
+        }
+
+        /* Style cho từng NÚT MENU (ITEM) */
+        .list-group-item {
+            border: none;
+            border-radius: 0; /* Vuông vức, không bo tròn */
+            padding: 16px 25px;
+            font-weight: 500;
+            color: #6b7280; /* Màu chữ xám */
+            background-color: transparent;
+            transition: all 0.2s;
+            margin: 0; /* Tràn viền */
+            border-left: 5px solid transparent; /* Tạo viền trái ẩn */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Hiệu ứng khi di chuột vào */
+        .list-group-item:hover {
+            background-color: #f9fafb;
+            color: #4e73df;
+            text-decoration: none;
+        }
+
+        /* Trạng thái ĐANG CHỌN (ACTIVE) */
+        .list-group-item.active-menu {
+            background-color: #eff6ff; /* Nền xanh rất nhạt */
+            color: #2563eb; /* Chữ xanh đậm */
+            font-weight: 700;
+            border-left: 5px solid #2563eb; /* Viền trái màu xanh */
+        }
+
+        /* Icon trong menu */
+        .list-group-item i {
+            width: 25px; /* Cố định độ rộng để thẳng hàng */
+            text-align: center;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        /* Tiêu đề nhóm nhỏ (TÀI CHÍNH, CÁ NHÂN...) */
+        .sidebar-divider {
+            padding: 20px 25px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- 3. MAIN CONTENT (BÊN PHẢI) --- */
+        #page-content-wrapper {
+            flex-grow: 1; /* Chiếm hết khoảng trống còn lại */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Cuộn dọc nội dung */
+            background-color: #f3f4f6;
+        }
+
+        /* Thanh Navbar trên cùng */
+        .navbar-user {
+            background-color: #fff;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        /* Avatar nhỏ */
+        .avatar-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: -260px; /* Ẩn menu đi */
+                position: fixed;
+                height: 100%;
+                box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            /* Class này được JS thêm vào để hiện menu */
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: 0;
+            }
+        }
+
+        /* Desktop: Class này để ẩn menu */
+        @media (min-width: 769px) {
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: -260px;
+            }
+        }
+    </style>
+    <style>
+        /* Card Danh mục */
+.category-card {
+    transition: all 0.2s ease;
+    border: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important;
+    border-color: #e3e6f0;
+}
+
+/* Icon tròn trong danh sách */
+.cat-icon-md {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+/* Tab Active Style */
+.nav-pills .nav-link.active {
+    background-color: #fff;
+    color: #4e73df;
+    border: 1px solid #e3e6f0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.nav-pills .nav-link {
+    color: #858796;
+    background: transparent;
+}
+    </style>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <i class="fas fa-coins me-2"></i> MoneyMaster
+            </div>
+
+            <div class="list-group list-group-flush">
+                
+                <a href="/user/dashboard.html" class="list-group-item list-group-item-action active-menu">
+                    <i class="fas fa-tachometer-alt"></i> Tổng Quan
+                </a>
+
+                <div class="sidebar-divider">Quản lý tài chính</div>
+
+                <a href="/user/transactions.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-file-invoice-dollar"></i> Sổ Thu Chi
+                </a>
+                <a href="/user/wallets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-wallet"></i> Ví Của Tôi
+                </a>
+                <a href="/user/budgets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chart-pie"></i> Ngân Sách
+                </a>
+                <a href="/user/goals.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-bullseye"></i> Mục Tiêu
+                </a>
+
+                <div class="sidebar-divider">Cá nhân</div>
+
+                <a href="/user/categories.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-tags"></i> Danh Mục
+                </a>
+                <a href="/user/tickets.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-headset"></i> Hỗ Trợ
+                </a>
+                <a href="/user/profile.html" class="list-group-item list-group-item-action">
+                    <i class="fas fa-user-circle"></i> Hồ Sơ
+                </a>
+            </div>
+
+            <div class="mt-auto p-3 border-top bg-white">
+                <a href="#" onclick="logoutUser()" class="btn btn-outline-danger w-100 fw-bold shadow-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i> Đăng Xuất
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand navbar-user">
+                <div class="container-fluid">
+                    <button class="btn btn-light text-primary border" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <div class="d-none d-md-block ms-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0" placeholder="Tìm kiếm...">
+                            <button class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown me-3">
+                            <a class="nav-link text-secondary position-relative" href="#" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell fa-lg"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">3+</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><h6 class="dropdown-header bg-primary text-white">Thông báo mới</h6></li>
+                                <li><a class="dropdown-item small py-2" href="#">Lương tháng 1 đã về!</a></li>
+                                <li><a class="dropdown-item small py-2" href="#">Cảnh báo: Sắp hết ngân sách ăn uống.</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="vr h-100 mx-2 text-secondary"></div>
+
+                        <div class="dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <span class="me-2 d-none d-lg-block text-dark fw-bold small">Nguyễn Văn A</span>
+                                <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=4e73df&color=fff" class="avatar-img rounded-circle">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><a class="dropdown-item" href="/user/profile.html"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
+                                <li><a class="dropdown-item" href="/user/categories.html"><i class="fas fa-cog me-2 text-muted"></i>Cài đặt</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4 py-4" id="main-content">
+                
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Danh Mục Của Tôi</h3>
+        <p class="text-muted small mb-0">Tùy chỉnh các loại thu chi theo thói quen của bạn</p>
+    </div>
+    <button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openCategoryModal('add')">
+        <i class="fas fa-plus me-2"></i> Tạo Mới
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-2">
+        <ul class="nav nav-pills nav-fill bg-light rounded p-1" id="categoryTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold rounded py-2" id="expense-tab" data-bs-toggle="pill" data-bs-target="#expense-content" type="button" role="tab" onclick="filterType='Expense'; renderCategories()">
+                    <i class="fas fa-shopping-cart me-2"></i> Khoản Chi (Expense)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold rounded py-2" id="income-tab" data-bs-toggle="pill" data-bs-target="#income-content" type="button" role="tab" onclick="filterType='Income'; renderCategories()">
+                    <i class="fas fa-money-bill-wave me-2"></i> Khoản Thu (Income)
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="row g-3" id="categoryList">
+    </div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary" id="modalTitle">Danh Mục Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <form id="categoryForm">
+                    <input type="hidden" id="catID">
+                    
+                    <input type="hidden" id="catType"> 
+
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" 
+                             id="iconPreviewBox" 
+                             style="width: 60px; height: 60px; border-radius: 16px; background-color: #dc3545; color: white; transition: 0.3s;">
+                            <i class="fas fa-utensils fs-3" id="iconPreview"></i>
+                        </div>
+                        <div class="small text-muted">Xem trước</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Tên Danh Mục <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control fw-bold" id="catName" placeholder="VD: Trà sữa, Tiền nhà..." required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-8">
+                            <label class="form-label fw-bold small">Biểu Tượng</label>
+                            <select class="form-select" id="catIcon" onchange="updatePreview()">
+                                <optgroup label="Chi tiêu">
+                                    <option value="fa-utensils">Ăn uống</option>
+                                    <option value="fa-shopping-cart">Mua sắm</option>
+                                    <option value="fa-home">Nhà cửa</option>
+                                    <option value="fa-car">Di chuyển</option>
+                                    <option value="fa-tshirt">Quần áo</option>
+                                    <option value="fa-gamepad">Giải trí</option>
+                                    <option value="fa-pills">Y tế</option>
+                                    <option value="fa-graduation-cap">Học tập</option>
+                                </optgroup>
+                                <optgroup label="Thu nhập">
+                                    <option value="fa-money-bill">Tiền lương</option>
+                                    <option value="fa-gift">Thưởng</option>
+                                    <option value="fa-chart-line">Đầu tư</option>
+                                    <option value="fa-hand-holding-usd">Được tặng</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-bold small">Màu Sắc</label>
+                            <input type="color" class="form-control form-control-color w-100" id="catColor" value="#dc3545" oninput="updatePreview()">
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4 pt-2 border-top">
+                        <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+            </div>
+
+            <footer class="mt-auto bg-white p-3 text-center text-muted small border-top">
+                &copy; 2026 MoneyMaster. All rights reserved.
+            </footer>
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Toggle Sidebar
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+        // Logout
+        function logoutUser() {
+            Swal.fire({
+                title: 'Đăng xuất?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#4e73df',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Thoát'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Đã đăng xuất', '', 'success');
+                }
+            })
+        }
+    </script>
+    <script>
+        // 1. MOCK DATA
+var mockCategories = [
+    // Khoản Chi (Expense)
+    { id: 1, name: "Ăn uống", type: "Expense", icon: "fa-utensils", color: "#e74a3b" },
+    { id: 2, name: "Di chuyển", type: "Expense", icon: "fa-car", color: "#f6c23e" },
+    { id: 3, name: "Mua sắm", type: "Expense", icon: "fa-shopping-cart", color: "#6f42c1" },
+    { id: 4, name: "Hóa đơn", type: "Expense", icon: "fa-file-invoice", color: "#4e73df" },
+    { id: 5, name: "Y tế", type: "Expense", icon: "fa-pills", color: "#1cc88a" },
+    
+    // Khoản Thu (Income)
+    { id: 6, name: "Lương", type: "Income", icon: "fa-money-bill", color: "#1cc88a" },
+    { id: 7, name: "Thưởng", type: "Income", icon: "fa-gift", color: "#36b9cc" },
+    { id: 8, name: "Đầu tư", type: "Income", icon: "fa-chart-line", color: "#f6c23e" }
+];
+
+var filterType = 'Expense'; // Mặc định hiển thị Chi tiêu trước
+var modalInstance;
+
+$(document).ready(function() {
+    renderCategories();
+});
+
+// 2. RENDER
+function renderCategories() {
+    // Lọc data theo Tab hiện tại
+    var filtered = mockCategories.filter(c => c.type === filterType);
+    var html = '';
+
+    if (filtered.length === 0) {
+        html = `<div class="col-12 text-center py-5 text-muted">Chưa có danh mục nào. Hãy tạo mới!</div>`;
+    } else {
+        filtered.forEach(c => {
+            html += `
+            <div class="col-xl-3 col-md-4 col-sm-6">
+                <div class="card category-card shadow-sm h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="cat-icon-md me-3 shadow-sm" style="background-color: ${c.color}">
+                                <i class="fas ${c.icon}"></i>
+                            </div>
+                            <div class="fw-bold text-dark text-truncate" style="max-width: 110px;">
+                                ${c.name}
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                <li><a class="dropdown-item" href="#" onclick="openCategoryModal('edit', ${c.id})">Sửa</a></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteCategory(${c.id})">Xóa</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+    }
+
+    $('#categoryList').html(html);
+}
+
+// 3. MODAL & PREVIEW
+function openCategoryModal(mode, id = null) {
+    var myModalEl = document.getElementById('categoryModal');
+    modalInstance = new bootstrap.Modal(myModalEl);
+    
+    // Set loại danh mục dựa trên Tab đang đứng
+    $('#catType').val(filterType); 
+
+    if (mode === 'add') {
+        $('#modalTitle').text(`Tạo ${filterType === 'Expense' ? 'Khoản Chi' : 'Khoản Thu'} Mới`);
+        $('#catID').val('');
+        $('#catName').val('');
+        
+        // Mặc định màu sắc icon theo loại
+        if (filterType === 'Expense') {
+            $('#catIcon').val('fa-utensils');
+            $('#catColor').val('#e74a3b');
+        } else {
+            $('#catIcon').val('fa-money-bill');
+            $('#catColor').val('#1cc88a');
+        }
+    } else {
+        var item = mockCategories.find(x => x.id === id);
+        if (item) {
+            $('#modalTitle').text('Cập Nhật Danh Mục');
+            $('#catID').val(item.id);
+            $('#catName').val(item.name);
+            $('#catIcon').val(item.icon);
+            $('#catColor').val(item.color);
+        }
+    }
+    
+    updatePreview();
+    modalInstance.show();
+}
+
+// Cập nhật icon xem trước khi nhập form
+function updatePreview() {
+    var color = $('#catColor').val();
+    var icon = $('#catIcon').val();
+    
+    $('#iconPreviewBox').css('background-color', color);
+    $('#iconPreview').attr('class', 'fas fs-3 ' + icon);
+}
+
+// 4. SUBMIT FORM
+$('#categoryForm').on('submit', function(e) {
+    e.preventDefault();
+    modalInstance.hide();
+    
+    var action = $('#catID').val() ? 'Cập nhật' : 'Tạo mới';
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: `Đã ${action} danh mục thành công!`,
+        timer: 1500,
+        showConfirmButton: false
+    }).then(() => {
+        // Reload data demo
+        renderCategories();
+    });
+});
+
+// 5. DELETE
+function deleteCategory(id) {
+    Swal.fire({
+        title: 'Xóa danh mục?',
+        text: "Các giao dịch cũ thuộc danh mục này sẽ hiển thị là 'Chưa phân loại'.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Xóa ngay'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire('Đã xóa', '', 'success');
+        }
+    })
+}
+    </script>
+</body>
+
+</html>
