@@ -1,0 +1,94 @@
+﻿@{
+
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Admin MoneyMaster</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="~/admin/css/layout.css" rel="stylesheet" />
+</head>
+<body>
+
+    <div class="d-flex" id="wrapper">
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading text-uppercase">
+                <i class="fas fa-coins text-primary me-2"></i> QLTC Admin
+            </div>
+            <div class="list-group list-group-flush mt-3">
+                <a href="/Admin/Dashboard" class="list-group-item list-group-item-action active-menu">
+                    <i class="fas fa-tachometer-alt"></i> Tổng Quan
+                </a>
+
+                <a href="/Admin/Users" class="list-group-item list-group-item-action">
+                    <i class="fas fa-users"></i> Người Dùng
+                </a>
+
+                <a href="/admin/categories" class="list-group-item list-group-item-action">
+                    <i class="fas fa-layer-group"></i> Danh Mục Gốc
+                </a>
+
+                <a href="/admin/support" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-headset"></i> Hỗ Trợ</span>
+                    <span class="badge bg-danger rounded-pill">3</span>
+                </a>
+
+                <a href="/admin/account" class="list-group-item list-group-item-action mt-4 border-top border-secondary pt-3">
+                    <i class="fas fa-cog"></i> Tài khoản
+                </a>
+
+                <a href="/admin/logout" onclick="logoutAdmin()" class="list-group-item list-group-item-action text-danger mt-3">
+                    <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+                </a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand navbar-admin">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <button class="btn btn-light border" id="sidebarToggle">
+                        <i class="fas fa-bars text-secondary"></i>
+                    </button>
+
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                            <span class="me-2 text-dark fw-bold small d-none d-sm-block">Administrator</span>
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=3b7ddd&color=fff" class="rounded-circle" width="36" height="36">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2 text-muted"></i>Đổi mật khẩu</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logoutAdmin()">Thoát</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4" id="main-content">
+
+                @RenderBody()
+
+            </div>
+
+            <footer class="bg-white p-3 text-center text-muted small border-top mt-auto">
+                &copy; 2026 Hệ Thống Quản Lý Tài Chính. All rights reserved.
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/admin/js/layout.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

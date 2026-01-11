@@ -1,0 +1,141 @@
+﻿@{
+
+}
+<link href="~/admin/css/catagories.css"/>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Quản Lý Danh Mục</h3>
+        <p class="text-muted small mb-0">Thiết lập các nhóm chi tiêu/thu nhập mặc định</p>
+    </div>
+    <a class="btn btn-primary shadow-sm" href="/admin/addCategori.html">
+        <i class="fas fa-plus me-2"></i>Thêm Danh Mục
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <div class="row align-items-center">
+            <div class="col-auto fw-bold text-muted small">Lọc theo loại:</div>
+            <div class="col-auto">
+                <select class="form-select form-select-sm border-0 bg-light fw-bold text-primary"
+                        id="filterType">
+                    <option value="">-- Tất cả --</option>
+                    <option value="Income">Khoản Thu (Income)</option>
+                    <option value="Expense">Khoản Chi (Expense)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table id="tableCategory" class="table table-hover align-middle" style="width:100%">
+            <thead class="bg-light">
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th>Tên Danh Mục</th>
+                    <th>Loại (Type)</th>
+                    <th>Màu sắc (Color)</th>
+                    <th>Icon Class</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bold text-primary" id="modalTitle">Thêm Danh Mục Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="categoryForm">
+                    <input type="hidden" id="catID">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">
+                            Tên danh mục <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="catName"
+                               placeholder="VD: Ăn uống, Lương..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Loại</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="catType" id="typeExpense"
+                                   value="Expense" checked>
+                            <label class="btn btn-outline-danger" for="typeExpense">
+                                Chi Tiêu
+                                (Expense)
+                            </label>
+
+                            <input type="radio" class="btn-check" name="catType" id="typeIncome"
+                                   value="Income">
+                            <label class="btn btn-outline-success" for="typeIncome">
+                                Thu Nhập
+                                (Income)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Màu sắc</label>
+                            <input type="color" class="form-control form-control-color w-100"
+                                   id="catColor" value="#563d7c">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small">Biểu tượng</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="fas fa-question"
+                                       id="iconDisplay"></i>
+                                </span>
+                                <select class="form-select" id="catIcon">
+                                    <option value="fa-question">-- Chọn --</option>
+                                    <option value="fa-utensils">Ăn uống</option>
+                                    <option value="fa-shopping-cart">Mua sắm</option>
+                                    <option value="fa-home">Nhà cửa</option>
+                                    <option value="fa-car">Xe cộ</option>
+                                    <option value="fa-plane">Du lịch</option>
+                                    <option value="fa-graduation-cap">Học tập</option>
+                                    <option value="fa-money-bill">Tiền mặt</option>
+                                    <option value="fa-landmark">Ngân hàng</option>
+                                    <option value="fa-gift">Quà tặng</option>
+                                    <option value="fa-chart-line">Đầu tư</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border text-center mt-3">
+                        <small class="text-muted d-block mb-2">Xem trước trên App User</small>
+                        <div class="d-inline-flex align-items-center px-3 py-2 rounded shadow-sm bg-white">
+                            <div id="livePreviewBox" class="icon-box me-2"
+                                 style="background-color: #563d7c;">
+                                <i class="fas fa-question text-white"></i>
+                            </div>
+                            <span class="fw-bold text-dark" id="livePreviewText">Tên danh mục</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveCategory()">
+                    Lưu
+                    Lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/admin/js/catagories.js"></script>
+}
