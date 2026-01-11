@@ -1,0 +1,165 @@
+﻿@model IEnumerable<HeThongQuanLyTaiChinhCaNhan.Models.User>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    // Layout đã được tự động nhận từ _ViewStart, không cần khai báo lại
+}
+<link href="~/admin/css/editUser.css"/>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Cập Nhật Thông Tin</h3>
+        <p class="text-muted small mb-0">
+            Đang chỉnh sửa user: <span class="fw-bold text-primary"
+                                       id="headerUserName">Loading...</span>
+        </p>
+    </div>
+    <a href="/admin/users.html" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+    </a>
+</div>
+
+<form id="editUserForm">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="fw-bold text-muted">Ảnh Đại Diện</h6>
+                    <div class="avatar-upload">
+                        <div class="avatar-edit">
+                            <input type='file' id="avatarInput" accept=".png, .jpg, .jpeg" />
+                            <label for="avatarInput" title="Đổi ảnh mới">
+                                <i class="fas fa-camera text-dark"></i>
+                            </label>
+                        </div>
+                        <div class="avatar-preview">
+                            <div id="imagePreview" style="background-image: url('');">
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted fst-italic">Nhấn vào icon máy ảnh để đổi avatar mới</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h5 class="fw-bold text-primary m-0">
+                        <i class="fas fa-user-edit me-2"></i>Chi Tiết
+                        Tài Khoản
+                    </h5>
+                </div>
+                <div class="card-body pt-0">
+
+                    <div class="alert alert-light border mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">
+                                    User ID (Không thể
+                                    sửa)
+                                </label>
+                                <input type="text" class="form-control bg-light" id="userID" value=""
+                                       readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Email / Tên đăng nhập</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <h6 class="fw-bold text-muted small text-uppercase">
+                                Bảo mật (Chỉ nhập nếu
+                                muốn đổi pass mới)
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Mật khẩu mới</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password"
+                                       placeholder="Bỏ trống để giữ mật khẩu cũ">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="togglePass('password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Xác nhận mật khẩu mới</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirmPassword"
+                                       placeholder="Nhập lại mật khẩu mới">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="togglePass('confirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25">
+
+                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Thông tin cá nhân</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small">Họ và Tên (FullName)</label>
+                            <input type="text" class="form-control fw-bold text-primary" id="fullName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Ngày sinh</label>
+                            <input type="date" class="form-control" id="dob">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Địa chỉ</label>
+                            <input type="text" class="form-control" id="address">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Thành phố</label>
+                            <input type="text" class="form-control" id="city">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Quốc gia</label>
+                            <input type="text" class="form-control" id="country">
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25">
+
+                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Cấu hình hệ thống</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Phân quyền</label>
+                            <select class="form-select" id="role">
+                                <option value="User">User</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Trạng thái</label>
+                            <select class="form-select" id="isActive">
+                                <option value="1">Active (Đang hoạt động)</option>
+                                <option value="0">Locked (Đang bị khóa)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end sticky-bottom bg-white py-3 border-top">
+                        <button type="button" class="btn btn-light me-2"
+                                onclick="window.location.reload()">
+                            Khôi phục gốc
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm fw-bold">
+                            <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+@section Scripts{
+    <script src="~/admin/js/editUser.js"></script>
+}
