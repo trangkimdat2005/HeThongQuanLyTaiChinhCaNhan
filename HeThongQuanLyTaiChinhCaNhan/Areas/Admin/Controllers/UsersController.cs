@@ -15,6 +15,8 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.users = context.Users.ToList();
+            
             var users = context.Users.ToList();
             return View(users);
         }

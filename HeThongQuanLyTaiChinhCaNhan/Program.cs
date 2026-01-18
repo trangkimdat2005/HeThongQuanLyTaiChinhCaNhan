@@ -1,4 +1,5 @@
 ﻿using HeThongQuanLyTaiChinhCaNhan.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login"; // Nếu chưa đăng nhập mà cố vào trang kín -> Đá về trang này
+        options.AccessDeniedPath = "/Auth/AccessDenied"; // Nếu đăng nhập rồi mà không đủ quyền -> Đá về trang này
+    });
 
 var app = builder.Build();
 
@@ -24,7 +31,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

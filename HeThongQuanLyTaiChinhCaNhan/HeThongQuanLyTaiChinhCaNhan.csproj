@@ -12,7 +12,6 @@
     <Folder Include="Areas\User\Controllers\" />
     <Folder Include="Areas\User\Data\" />
     <Folder Include="Areas\User\Models\" />
-    <Folder Include="ViewModels\" />
     <Folder Include="wwwroot\user\css\" />
     <Folder Include="wwwroot\user\js\" />
   </ItemGroup>

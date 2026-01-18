@@ -10,6 +10,11 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
         {
             return View();
         }
+        [Route("404")]
+        public IActionResult PageNotFound()
+        {
+            return View("404");
+        }
 
         public IActionResult Privacy()
         {
