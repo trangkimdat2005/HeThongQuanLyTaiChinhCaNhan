@@ -25,3 +25,40 @@ function logoutAdmin() {
         }
     })
 }
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Lấy đường dẫn hiện tại
+    const currentPath = window.location.pathname.toLowerCase();
+
+    // 2. Lấy danh sách tất cả các thẻ <a> trong menu
+    const menuLinks = document.querySelectorAll('#sidebar-wrapper .list-group-item');
+
+    // --- BƯỚC QUAN TRỌNG: RESET ---
+    // Duyệt qua TẤT CẢ các link và XÓA class active-menu đi (để tránh bị trùng)
+    menuLinks.forEach(link => {
+        link.classList.remove('active-menu');
+    });
+
+    // --- BƯỚC TIẾP THEO: ACTIVE CÁI MỚI ---
+    menuLinks.forEach(link => {
+        const linkAttribute = link.getAttribute('href');
+
+        if (linkAttribute) {
+            const linkPath = linkAttribute.toLowerCase();
+
+            // Logic so sánh:
+            // 1. Đường dẫn hiện tại phải chứa link menu (VD: /Admin/Users/Edit chứa /Admin/Users)
+            // 2. Bỏ qua link logout và link rỗng (#)
+            // 3. Xử lý riêng trường hợp Dashboard (vì nó hay bị trùng với root /)
+
+            if (linkPath.length > 1 && currentPath.includes(linkPath) && !linkPath.includes('logout')) {
+                link.classList.add('active-menu');
+            }
+            // Trường hợp đặc biệt: Nếu đang ở đúng trang Dashboard gốc
+            else if (currentPath === '/admin' || currentPath === '/admin/') {
+                if (linkPath.includes('dashboard')) {
+                    link.classList.add('active-menu');
+                }
+            }
+        }
+    });
+});
