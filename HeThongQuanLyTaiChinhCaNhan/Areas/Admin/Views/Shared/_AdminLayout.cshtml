@@ -1,6 +1,9 @@
 ﻿@{
 
 }
+@using HeThongQuanLyTaiChinhCaNhan.Models
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext _context
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -21,7 +24,7 @@
                 <i class="fas fa-coins text-primary me-2"></i> QLTC Admin
             </div>
             <div class="list-group list-group-flush mt-3">
-                <a href="/Admin/Dashboard" class="list-group-item list-group-item-action active-menu">
+                <a href="/Admin/Dashboard" class="list-group-item list-group-item-action">
                     <i class="fas fa-tachometer-alt"></i> Tổng Quan
                 </a>
 
@@ -42,7 +45,7 @@
                     <i class="fas fa-cog"></i> Tài khoản
                 </a>
 
-                <a href="/admin/logout" onclick="logoutAdmin()" class="list-group-item list-group-item-action text-danger mt-3">
+                <a onclick="logoutAdmin()" class="list-group-item list-group-item-action text-danger mt-3">
                     <i class="fas fa-sign-out-alt"></i> Đăng Xuất
                 </a>
             </div>
@@ -56,18 +59,29 @@
                         <i class="fas fa-bars text-secondary"></i>
                     </button>
 
-                    <div class="dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <span class="me-2 text-dark fw-bold small d-none d-sm-block">Administrator</span>
-                            <img src="https://ui-avatars.com/api/?name=Admin&background=3b7ddd&color=fff" class="rounded-circle" width="36" height="36">
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-key me-2 text-muted"></i>Đổi mật khẩu</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="logoutAdmin()">Thoát</a></li>
-                        </ul>
-                    </div>
+                    @{
+                        // Lấy ID user hiện tại từ Cookie
+                        var currentUserId = User.FindFirst("UserId")?.Value;
+
+                        // Tìm User mới nhất trong Database để lấy ảnh (đảm bảo real-time)
+                        var currentUser = _context.Users.AsNoTracking().FirstOrDefault(u => u.UserId == currentUserId);
+
+                        // Lấy tên: Ưu tiên DB -> Cookie -> "Admin"
+                        var currentName = currentUser?.FullName ?? User.Identity?.Name ?? "Admin";
+
+                        // Lấy ảnh: Ưu tiên DB -> Tạo ảnh theo tên
+                        var dbAvatar = currentUser?.AvatarUrl;
+                        var displayAvatar = !string.IsNullOrEmpty(dbAvatar)
+                        ? dbAvatar
+                        : $"https://ui-avatars.com/api/?name={currentName}&background=3b7ddd&color=fff";
+                    }
+
+                    <a class="nav-link d-flex align-items-center" href="/Admin/Account" title="Xem hồ sơ cá nhân">
+                        <span class="me-2 text-dark fw-bold small d-none d-sm-block">
+                            @currentName
+                        </span>
+                        <img src="@displayAvatar" class="rounded-circle border" width="36" height="36" style="object-fit: cover;">
+                    </a>
                 </div>
             </nav>
 

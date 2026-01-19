@@ -1,9 +1,6 @@
 ﻿$(document).ready(function () {
-    // Kích hoạt DataTables cho bảng đã có sẵn HTML
+    // Kích hoạt DataTables
     $('#tableUser').DataTable({
-        // Không cần truyền "data" hay "columns" nữa
-
-        // Cấu hình ngôn ngữ tiếng Việt
         language: {
             search: "Tìm kiếm nhanh:",
             lengthMenu: "Hiển thị _MENU_ dòng",
@@ -14,33 +11,61 @@
         },
         pageLength: 10,
         lengthMenu: [5, 10, 20, 50],
-        ordering: true,     // Cho phép sắp xếp
-        responsive: true,   // Cho phép co giãn trên mobile
-
-        // Tắt sắp xếp ở cột cuối cùng (Cột hành động) cho đẹp
+        ordering: true,
+        responsive: true,
         columnDefs: [
-            { orderable: false, targets: -1 }
+            { orderable: false, targets: -1 } // Tắt sort cột hành động
         ]
     });
 });
 
-// --- GIỮ NGUYÊN HÀM XỬ LÝ NÚT XÓA ---
-function deleteUser(id, name) {
+// --- CHỈ DÙNG 1 HÀM NÀY THÔI ---
+function deleteUser(id, fullName) {
     Swal.fire({
-        title: `Xóa user ${name}?`,
-        text: "Hành động này không thể hoàn tác!",
+        title: 'Xóa người dùng?',
+        html: `Bạn có chắc muốn xóa <b>${fullName}</b> không?<br><small class="text-danger">Hành động này không thể hoàn tác!</small>`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Xóa luôn',
+        confirmButtonText: 'Xóa ngay',
         cancelButtonText: 'Hủy'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Sau này gọi API xóa thật ở đây
-            // $.ajax({ url: '/Admin/Users/Delete/' + id ... });
 
-            Swal.fire('Đã xóa!', 'User đã bay màu.', 'success');
+            // Lấy Token từ View (Giờ đã có nhờ bước 1)
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            Swal.fire({
+                title: 'Đang xử lý...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            $.ajax({
+                url: '/Admin/Users/Delete',
+                type: 'POST',
+                data: { id: id },
+                headers: { "RequestVerificationToken": token },
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire(
+                            'Đã xóa!',
+                            res.message,
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Không thể xóa', res.message, 'error');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // In lỗi ra console để debug nếu cần
+                    console.error(xhr.responseText);
+                    Swal.fire('Lỗi', 'Không kết nối được server (Code: ' + xhr.status + ')', 'error');
+                }
+            });
         }
     })
 }

@@ -3,16 +3,32 @@
   "WorkspaceRootPath": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\wwwroot\\admin\\js\\catagories.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\wwwroot\\admin\\js\\catagories.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\areas\\admin\\views\\categories\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\areas\\admin\\views\\categories\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\areas\\admin\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\areas\\admin\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\views\\auth\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\views\\auth\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\areas\\admin\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\areas\\admin\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|d:\\nam3\\hethongquanlytaichinhcanhan\\hethongquanlytaichinhcanhan\\areas\\admin\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{218C12DF-E282-4446-205E-D2E76DBFB8C6}|HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj|solutionrelative:hethongquanlytaichinhcanhan\\areas\\admin\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -35,40 +51,92 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "catagories.js",
-              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\wwwroot\\admin\\js\\catagories.js",
-              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\wwwroot\\admin\\js\\catagories.js",
-              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\wwwroot\\admin\\js\\catagories.js",
-              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\wwwroot\\admin\\js\\catagories.js",
-              "ViewState": "AgIAABYAAAAAAAAAAAAiwE0AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-01-18T18:58:22.09Z",
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Program.cs",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Program.cs",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Program.cs",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-19T17:59:29.551Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Categories\\Index.cshtml",
-              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Categories\\Index.cshtml",
-              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Categories\\Index.cshtml",
-              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Categories\\Index.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\appsettings.json",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\appsettings.json",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\appsettings.json",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-19T17:59:15.406Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Register.cshtml",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Register.cshtml",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Register.cshtml",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Register.cshtml",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAADEAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-01-18T18:58:15.873Z",
+              "WhenOpened": "2026-01-19T17:47:18.241Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Views\\Home\\Index.cshtml",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAJIAAAAAAAAAAAAAALYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-19T17:02:53.681Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "CategoriesController.cs",
-              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Controllers\\CategoriesController.cs",
-              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Controllers\\CategoriesController.cs",
-              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Controllers\\CategoriesController.cs",
-              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Controllers\\CategoriesController.cs",
-              "ViewState": "AgIAAK0AAAAAAAAAAAA6wMoAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-18T17:06:20.678Z",
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Login.cshtml",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Login.cshtml",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Login.cshtml",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Views\\Auth\\Login.cshtml",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAAK8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-19T17:02:34.006Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "_AdminLayout.cshtml",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Shared\\_AdminLayout.cshtml",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Shared\\_AdminLayout.cshtml",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Shared\\_AdminLayout.cshtml",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Shared\\_AdminLayout.cshtml",
+              "ViewState": "AgIAADYAAAAAAAAAAAAAAEQAAABDAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-19T16:41:36.445Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "RelativeDocumentMoniker": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "ToolTip": "D:\\nam3\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "RelativeToolTip": "HeThongQuanLyTaiChinhCaNhan\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
+              "ViewState": "AgIAAIEAAAAAAAAAAAAAAK4AAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-19T16:41:26.194Z",
               "EditorCaption": ""
             }
           ]

@@ -31,9 +31,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Wallet> Wallets { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Server=localhost,1434;Database=QLTC;User Id=sa;Password=Password123!;TrustServerCertificate=True;");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder){}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -154,6 +152,8 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.QuestionType).HasMaxLength(50);
+            entity.Property(e => e.RepliedAt).HasColumnType("datetime");
+            entity.Property(e => e.RepliedBy).HasMaxLength(450);
             entity.Property(e => e.RespondType).HasMaxLength(50);
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
@@ -162,7 +162,11 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(450)
                 .HasColumnName("UserID");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Tickets)
+            entity.HasOne(d => d.RepliedByNavigation).WithMany(p => p.TicketRepliedByNavigations)
+                .HasForeignKey(d => d.RepliedBy)
+                .HasConstraintName("FK_Tickets_RepliedBy");
+
+            entity.HasOne(d => d.User).WithMany(p => p.TicketUsers)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Tickets_Users");

@@ -1,10 +1,13 @@
 ﻿using HeThongQuanLyTaiChinhCaNhan.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; // Cần thiết để dùng ToList()
 
 namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
+
     public class CategoriesController : Controller
     {
         private readonly AppDbContext _context;

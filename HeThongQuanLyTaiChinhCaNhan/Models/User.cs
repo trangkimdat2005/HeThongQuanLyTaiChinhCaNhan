@@ -39,7 +39,9 @@ public partial class User
 
     public virtual ICollection<Goal> Goals { get; set; } = new List<Goal>();
 
-    public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+    public virtual ICollection<Ticket> TicketRepliedByNavigations { get; set; } = new List<Ticket>();
+
+    public virtual ICollection<Ticket> TicketUsers { get; set; } = new List<Ticket>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 
