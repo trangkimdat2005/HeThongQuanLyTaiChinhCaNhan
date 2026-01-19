@@ -19,5 +19,13 @@ public partial class Ticket
 
     public DateTime? CreatedAt { get; set; }
 
+    public string? AdminResponse { get; set; }
+
+    public string? RepliedBy { get; set; }
+
+    public DateTime? RepliedAt { get; set; }
+
+    public virtual User? RepliedByNavigation { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

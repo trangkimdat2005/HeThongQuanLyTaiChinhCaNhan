@@ -80,21 +80,15 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
             return View(model);
         }
 
-        // Đăng xuất
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
-        }
-
-        // GET: Đăng ký
-        public IActionResult Register()
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            return View();
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
     }
 }

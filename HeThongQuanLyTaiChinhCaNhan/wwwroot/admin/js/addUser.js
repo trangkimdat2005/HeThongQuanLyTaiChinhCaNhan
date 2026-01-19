@@ -1,4 +1,4 @@
-﻿// 1. XỬ LÝ PREVIEW ẢNH (AVATAR URL)
+﻿// 1. XỬ LÝ PREVIEW ẢNH
 function readURL(input) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
@@ -20,35 +20,64 @@ function togglePass(id) {
     x.type = (x.type === "password") ? "text" : "password";
 }
 
-// 3. XỬ LÝ SUBMIT FORM (MÔ PHỎNG)
-document.getElementById('createUserForm').addEventListener('submit', function (e) {
+// 3. XỬ LÝ SUBMIT FORM (AJAX THẬT)
+$('#createUserForm').on('submit', function (e) {
     e.preventDefault();
 
     // Validate Mật khẩu
-    var p1 = document.getElementById('password').value;
-    var p2 = document.getElementById('confirmPassword').value;
+    var p1 = $('#password').val();
+    var p2 = $('#confirmPassword').val();
 
     if (p1 !== p2) {
         Swal.fire('Lỗi', 'Mật khẩu xác nhận không khớp!', 'error');
         return;
     }
 
-    // Giả lập loading và gửi dữ liệu
+    if (p1.length < 6) {
+        Swal.fire('Lỗi', 'Mật khẩu phải từ 6 ký tự trở lên!', 'warning');
+        return;
+    }
+
+    // Tạo FormData từ form hiện tại (bao gồm cả file ảnh và text)
+    // Yêu cầu các input phải có thuộc tính name=""
+    var formData = new FormData(this);
+
     Swal.fire({
-        title: 'Đang lưu vào CSDL...',
-        html: 'INSERT INTO Users (...) VALUES (...)',
-        timer: 1500,
-        timerProgressBar: true,
+        title: 'Đang lưu dữ liệu...',
+        allowOutsideClick: false,
         didOpen: () => { Swal.showLoading() }
-    }).then((result) => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Thành công!',
-            text: 'Đã thêm user mới vào bảng Users.',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            // Logic sau khi lưu thành công (ví dụ: reload hoặc chuyển trang)
-            // window.location.href = '/admin/users.html'; 
-        });
+    });
+
+    $.ajax({
+        url: '/Admin/Users/Add', // Gọi đến Action Add trong UsersController
+        type: 'POST',
+        data: formData,
+        contentType: false, // Bắt buộc false để gửi file
+        processData: false, // Bắt buộc false để gửi file
+        success: function (res) {
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: res.message,
+                    confirmButtonText: 'Về danh sách',
+                    showCancelButton: true,
+                    cancelButtonText: 'Thêm tiếp'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Admin/Users'; // Chuyển về trang danh sách
+                    } else {
+                        // Reset form để nhập tiếp
+                        $('#createUserForm')[0].reset();
+                        $('#imagePreview').css('background-image', 'url(https://ui-avatars.com/api/?name=New+User&background=f0f0f0&color=999)');
+                    }
+                });
+            } else {
+                Swal.fire('Lỗi!', res.message, 'error');
+            }
+        },
+        error: function () {
+            Swal.fire('Lỗi!', 'Không thể kết nối đến server.', 'error');
+        }
     });
 });
