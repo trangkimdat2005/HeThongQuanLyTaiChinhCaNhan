@@ -8,11 +8,12 @@ wwwroot\admin\css\support.css
 wwwroot\admin\js\account.js
 wwwroot\admin\js\addCategories.js
 wwwroot\admin\js\addUser.js
-wwwroot\admin\js\catagories.js
 wwwroot\admin\js\dashboard.js
 wwwroot\admin\js\editCategories.js
 wwwroot\admin\js\editUser.js
+wwwroot\admin\js\layout.js
 wwwroot\admin\js\support.js
+wwwroot\admin\js\user.js
 wwwroot\css\404.css
 wwwroot\css\index.css
 wwwroot\css\login.css
@@ -81,8 +82,7 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-wwwroot\admin\js\layout.js
-wwwroot\admin\js\user.js
+wwwroot\admin\js\catagories.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\css\addCategories.css
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\css\addUser.css
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\css\catagories.css
@@ -93,11 +93,12 @@ D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\cs
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\account.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\addCategories.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\addUser.js
-D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\catagories.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\dashboard.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\editCategories.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\editUser.js
+D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\layout.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\support.js
+D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\user.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\css\404.css
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\css\index.css
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\css\login.css
@@ -165,5 +166,4 @@ D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\lib\jque
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\lib\jquery\dist\jquery.slim.min.js
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\lib\jquery\dist\jquery.slim.min.map
 D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\lib\jquery\LICENSE.txt
-D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\layout.js
-D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\user.js
+D:\nam3\HeThongQuanLyTaiChinhCaNhan\HeThongQuanLyTaiChinhCaNhan\wwwroot\admin\js\catagories.js
