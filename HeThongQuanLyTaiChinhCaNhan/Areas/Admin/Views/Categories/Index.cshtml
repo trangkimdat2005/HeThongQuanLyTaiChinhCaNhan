@@ -1,13 +1,18 @@
-﻿@{
-
+﻿@using HeThongQuanLyTaiChinhCaNhan.Models
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    List<Category> categories = ViewBag.Categories as List<Category>;
 }
-<link href="~/admin/css/catagories.css"/>
+@Html.AntiForgeryToken()
+
+<link href="~/admin/css/catagories.css" rel="stylesheet" />
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h3 class="fw-bold text-dark mb-0">Quản Lý Danh Mục</h3>
         <p class="text-muted small mb-0">Thiết lập các nhóm chi tiêu/thu nhập mặc định</p>
     </div>
-    <a class="btn btn-primary shadow-sm" href="/admin/addCategori.html">
+    <a class="btn btn-primary shadow-sm" href="/Admin/Categories/Add">
         <i class="fas fa-plus me-2"></i>Thêm Danh Mục
     </a>
 </div>
@@ -17,8 +22,7 @@
         <div class="row align-items-center">
             <div class="col-auto fw-bold text-muted small">Lọc theo loại:</div>
             <div class="col-auto">
-                <select class="form-select form-select-sm border-0 bg-light fw-bold text-primary"
-                        id="filterType">
+                <select class="form-select form-select-sm border-0 bg-light fw-bold text-primary" id="filterType">
                     <option value="">-- Tất cả --</option>
                     <option value="Income">Khoản Thu (Income)</option>
                     <option value="Expense">Khoản Chi (Expense)</option>
@@ -42,100 +46,58 @@
                 </tr>
             </thead>
             <tbody>
+                @if (categories != null && categories.Any())
+                {
+                    foreach (var item in categories)
+                    {
+                        <tr>
+                            <td><span class="text-muted small">#@item.CategoryId</span></td>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box me-2" style="background-color: @item.Color; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 5px; color: white;">
+                                        <i class="fas @item.Icon"></i>
+                                    </div>
+                                    <span class="fw-bold">@item.CategoryName</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (item.Type == "Income")
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Khoản Thu</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Khoản Chi</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="rounded-circle border me-2" style="width:15px;height:15px;background:@item.Color"></span>
+                                    <span class="small text-muted">@item.Color</span>
+                                </div>
+                            </td>
+
+                            <td><code class="small text-muted">@item.Icon</code></td>
+
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-light text-primary me-1" href="/Admin/Categories/Edit/@item.CategoryId">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-light text-danger" onclick="deleteCategory(@item.CategoryId)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
 </div>
 
-<div class="modal fade" id="categoryModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-bottom-0">
-                <h5 class="modal-title fw-bold text-primary" id="modalTitle">Thêm Danh Mục Mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-0">
-                <form id="categoryForm">
-                    <input type="hidden" id="catID">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">
-                            Tên danh mục <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="catName"
-                               placeholder="VD: Ăn uống, Lương..." required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Loại</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="catType" id="typeExpense"
-                                   value="Expense" checked>
-                            <label class="btn btn-outline-danger" for="typeExpense">
-                                Chi Tiêu
-                                (Expense)
-                            </label>
-
-                            <input type="radio" class="btn-check" name="catType" id="typeIncome"
-                                   value="Income">
-                            <label class="btn btn-outline-success" for="typeIncome">
-                                Thu Nhập
-                                (Income)
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-6">
-                            <label class="form-label fw-bold small">Màu sắc</label>
-                            <input type="color" class="form-control form-control-color w-100"
-                                   id="catColor" value="#563d7c">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-bold small">Biểu tượng</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white">
-                                    <i class="fas fa-question"
-                                       id="iconDisplay"></i>
-                                </span>
-                                <select class="form-select" id="catIcon">
-                                    <option value="fa-question">-- Chọn --</option>
-                                    <option value="fa-utensils">Ăn uống</option>
-                                    <option value="fa-shopping-cart">Mua sắm</option>
-                                    <option value="fa-home">Nhà cửa</option>
-                                    <option value="fa-car">Xe cộ</option>
-                                    <option value="fa-plane">Du lịch</option>
-                                    <option value="fa-graduation-cap">Học tập</option>
-                                    <option value="fa-money-bill">Tiền mặt</option>
-                                    <option value="fa-landmark">Ngân hàng</option>
-                                    <option value="fa-gift">Quà tặng</option>
-                                    <option value="fa-chart-line">Đầu tư</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-light border text-center mt-3">
-                        <small class="text-muted d-block mb-2">Xem trước trên App User</small>
-                        <div class="d-inline-flex align-items-center px-3 py-2 rounded shadow-sm bg-white">
-                            <div id="livePreviewBox" class="icon-box me-2"
-                                 style="background-color: #563d7c;">
-                                <i class="fas fa-question text-white"></i>
-                            </div>
-                            <span class="fw-bold text-dark" id="livePreviewText">Tên danh mục</span>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer border-top-0 pt-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary px-4" onclick="saveCategory()">
-                    Lưu
-                    Lại
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 @section Scripts {
     <script src="~/admin/js/catagories.js"></script>
 }

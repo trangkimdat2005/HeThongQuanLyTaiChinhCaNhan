@@ -1,88 +1,92 @@
 ﻿$(document).ready(function () {
 
-    // 1. MOCK DATA (GIẢ LẬP DỮ LIỆU TỪ DB ĐỔ VỀ)
-    // Trong thực tế: Bạn sẽ lấy ID từ URL -> Gọi API -> Nhận JSON này
-    var mockData = {
-        CategoryID: 3,
-        CategoryName: "Ăn uống",
-        Type: "Expense",
-        Icon: "fa-utensils",
-        Color: "#dc3545"
-    };
-
-    // 2. HÀM ĐỔ DỮ LIỆU VÀO FORM
-    function loadData() {
-        // Điền dữ liệu vào input
-        $('#headerCatName').text(mockData.CategoryName);
-        $('#catID').val(mockData.CategoryID);
-        $('#catName').val(mockData.CategoryName);
-        $('#catColor').val(mockData.Color);
-        $('#colorCode').text(mockData.Color);
-        $('#catIcon').val(mockData.Icon);
-
-        // Check radio button dựa theo Type
-        if (mockData.Type === 'Income') {
-            $('#typeIncome').prop('checked', true);
-        } else {
-            $('#typeExpense').prop('checked', true);
-        }
-
-        // Kích hoạt sự kiện để Live Preview cập nhật theo dữ liệu vừa đổ
-        updatePreview();
-    }
-
-    // 3. LOGIC LIVE PREVIEW (CẬP NHẬT KHI SỬA)
+    // 1. LOGIC LIVE PREVIEW
     function updatePreview() {
-        // Lấy giá trị hiện tại trên form
         var name = $('#catName').val();
         var color = $('#catColor').val();
         var icon = $('#catIcon').val();
-        var type = $('input[name="catType"]:checked').val();
 
-        // Update UI cột trái
+        // Sửa: Lấy Type chuẩn xác bằng ID
+        var type = $('#typeIncome').is(':checked') ? 'Income' : 'Expense';
+
         $('#previewName').text(name || 'Chưa đặt tên');
         $('#previewBox').css('background-color', color);
+        $('#colorCode').text(color);
         $('#previewIcon').attr('class', 'fas text-white fa-lg ' + icon);
 
         if (type === 'Income') {
-            $('#previewType').text('Thu nhập').addClass('text-success').removeClass('text-danger');
+            $('#previewType').text('Thu nhập');
         } else {
-            $('#previewType').text('Chi tiêu').addClass('text-danger').removeClass('text-success');
+            $('#previewType').text('Chi tiêu');
         }
     }
 
-    // Gắn sự kiện: Cứ sửa là update preview
-    $('#catName, #catColor, #catIcon, input[name="catType"]').on('input change', function () {
-        updatePreview();
-        // Cập nhật mã màu text bên cạnh input
-        if (this.id === 'catColor') $('#colorCode').text($(this).val());
-    });
+    // Gắn sự kiện
+    $('#catName, #catColor, #catIcon, input[name="Type"]').on('input change', updatePreview);
 
-    // --- CHẠY HÀM LOAD DATA KHI TRANG VỪA TẢI XONG ---
-    loadData();
+    // Chạy 1 lần đầu tiên
+    updatePreview();
 
 
-    // 4. XỬ LÝ SUBMIT FORM UPDATE
+    // 2. XỬ LÝ SUBMIT FORM
     $('#editCategoryForm').on('submit', function (e) {
         e.preventDefault();
 
+        // Lấy ID và ép kiểu về số nguyên
+        var idVal = $('#catID').val();
+        var id = parseInt(idVal); // <--- Ép kiểu số
+
+        if (!id || id === 0) {
+            Swal.fire('Lỗi', 'Không tìm thấy ID danh mục. Hãy tải lại trang!', 'error');
+            return;
+        }
+
+        var selectedType = $('#typeIncome').is(':checked') ? 'Income' : 'Expense';
+
+        var categoryData = {
+            CategoryId: id, // <--- Gửi số nguyên
+            CategoryName: $('#catName').val(),
+            Type: selectedType,
+            Color: $('#catColor').val(),
+            Icon: $('#catIcon').val()
+        };
+
+        console.log("Dữ liệu chuẩn bị gửi:", categoryData); // Check console lần nữa xem CategoryId có số chưa
+
+        var token = $('input[name="__RequestVerificationToken"]').val();
+
         Swal.fire({
             title: 'Đang cập nhật...',
-            text: 'UPDATE Categories SET ... WHERE CategoryID = ' + mockData.CategoryID,
-            timer: 1500,
-            timerProgressBar: true,
-            didOpen: () => { Swal.showLoading() },
-        }).then(() => {
-            Swal.fire({
-                icon: 'success',
-                title: 'Đã lưu thay đổi!',
-                text: 'Thông tin danh mục đã được cập nhật.',
-                confirmButtonText: 'Quay lại danh sách'
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    window.location.href = '/admin/categories.html';
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading() }
+        });
+
+        $.ajax({
+            url: '/Admin/Categories/Edit/' + id,
+            type: 'POST',
+            contentType: 'application/json',
+            headers: { "RequestVerificationToken": token },
+            data: JSON.stringify(categoryData),
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã lưu!',
+                        text: response.message,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Về danh sách'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/Admin/Categories';
+                        }
+                    });
+                } else {
+                    Swal.fire('Lỗi!', response.message, 'error');
                 }
-            })
+            },
+            error: function () {
+                Swal.fire('Lỗi!', 'Không thể kết nối server.', 'error');
+            }
         });
     });
 });
