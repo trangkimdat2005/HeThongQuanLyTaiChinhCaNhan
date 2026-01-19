@@ -1,0 +1,26 @@
+﻿/* Badge trạng thái mềm mại */
+.badge-soft-primary {
+    background-color: rgba(78, 115, 223, 0.1);
+    color: #4e73df;
+}
+
+.badge-soft-warning {
+    background-color: rgba(246, 194, 62, 0.1);
+    color: #d39e00;
+}
+
+.badge-soft-success {
+    background-color: rgba(28, 200, 138, 0.1);
+    color: #1cc88a;
+}
+
+.badge-soft-danger {
+    background-color: rgba(231, 74, 59, 0.1);
+    color: #e74a3b;
+}
+
+/* Table hover */
+.table-hover tbody tr:hover {
+    background-color: #f8f9fc;
+    cursor: pointer;
+}
