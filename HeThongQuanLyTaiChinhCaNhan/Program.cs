@@ -38,6 +38,7 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 // 1. Route dành cho Area (Admin/User) - PHẢI ĐẶT TRÊN CÙNG
+
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}"
@@ -45,8 +46,11 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
 
-
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}"
+//);
 app.Run();

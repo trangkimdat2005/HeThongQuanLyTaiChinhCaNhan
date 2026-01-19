@@ -1,0 +1,38 @@
+﻿/* Nút Upload Avatar nổi */
+.avatar-upload-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 35px;
+    height: 35px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s;
+}
+
+    .avatar-upload-btn:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.1);
+    }
+
+/* Tab active đẹp hơn */
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+}
+
+    .nav-tabs .nav-link.active {
+        color: #4e73df;
+        border-bottom: 2px solid #4e73df;
+        background: none;
+    }
+
+    .nav-tabs .nav-link:hover {
+        border: none;
+        color: #4e73df;
+    }

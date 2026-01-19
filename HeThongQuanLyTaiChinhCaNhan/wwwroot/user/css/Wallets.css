@@ -1,0 +1,60 @@
+﻿/* Card Ví - Hiệu ứng hover nổi lên */
+.wallet-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+    .wallet-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+
+/* Icon tròn trong Card */
+.wallet-icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 15px;
+}
+
+/* Nút 3 chấm (Action) trên Card */
+.wallet-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.wallet-card:hover .wallet-actions {
+    opacity: 1;
+}
+
+/* Màu nền nhẹ cho từng loại ví */
+.bg-wallet-bank {
+    background: linear-gradient(135deg, #ffffff 0%, #f3f6ff 100%);
+    border-left: 5px solid #4e73df;
+}
+
+.bg-wallet-cash {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+    border-left: 5px solid #1cc88a;
+}
+
+.bg-wallet-ewallet {
+    background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%);
+    border-left: 5px solid #e74a3b;
+}
+
+.bg-wallet-credit {
+    background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%);
+    border-left: 5px solid #f6c23e;
+}

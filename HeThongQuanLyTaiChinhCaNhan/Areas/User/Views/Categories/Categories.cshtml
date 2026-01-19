@@ -1,0 +1,102 @@
+
+
+<link href="~/user/css/Categories.css" rel="stylesheet" />
+
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<div>
+		<h3 class="fw-bold text-dark mb-0">Danh Mục Của Tôi</h3>
+		<p class="text-muted small mb-0">Tùy chỉnh các loại thu chi theo thói quen của bạn</p>
+	</div>
+	<button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openCategoryModal('add')">
+		<i class="fas fa-plus me-2"></i> Tạo Mới
+	</button>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+	<div class="card-body p-2">
+		<ul class="nav nav-pills nav-fill bg-light rounded p-1" id="categoryTabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button class="nav-link active fw-bold rounded py-2" id="expense-tab" data-bs-toggle="pill" data-bs-target="#expense-content" type="button" role="tab" onclick="filterType='Expense'; renderCategories()">
+					<i class="fas fa-shopping-cart me-2"></i> Khoản Chi (Expense)
+				</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button class="nav-link fw-bold rounded py-2" id="income-tab" data-bs-toggle="pill" data-bs-target="#income-content" type="button" role="tab" onclick="filterType='Income'; renderCategories()">
+					<i class="fas fa-money-bill-wave me-2"></i> Khoản Thu (Income)
+				</button>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="row g-3" id="categoryList">
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom-0 pb-0">
+				<h5 class="modal-title fw-bold text-primary" id="modalTitle">Danh Mục Mới</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body pt-3">
+				<form id="categoryForm">
+					<input type="hidden" id="catID">
+
+					<input type="hidden" id="catType">
+
+					<div class="text-center mb-4">
+						<div class="d-inline-flex align-items-center justify-content-center mb-2 shadow-sm"
+							 id="iconPreviewBox"
+							 style="width: 60px; height: 60px; border-radius: 16px; background-color: #dc3545; color: white; transition: 0.3s;">
+							<i class="fas fa-utensils fs-3" id="iconPreview"></i>
+						</div>
+						<div class="small text-muted">Xem trước</div>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label fw-bold small">Tên Danh Mục <span class="text-danger">*</span></label>
+						<input type="text" class="form-control fw-bold" id="catName" placeholder="VD: Trà sữa, Tiền nhà..." required>
+					</div>
+
+					<div class="row g-2 mb-3">
+						<div class="col-8">
+							<label class="form-label fw-bold small">Biểu Tượng</label>
+							<select class="form-select" id="catIcon" onchange="updatePreview()">
+								<optgroup label="Chi tiêu">
+									<option value="fa-utensils">Ăn uống</option>
+									<option value="fa-shopping-cart">Mua sắm</option>
+									<option value="fa-home">Nhà cửa</option>
+									<option value="fa-car">Di chuyển</option>
+									<option value="fa-tshirt">Quần áo</option>
+									<option value="fa-gamepad">Giải trí</option>
+									<option value="fa-pills">Y tế</option>
+									<option value="fa-graduation-cap">Học tập</option>
+								</optgroup>
+								<optgroup label="Thu nhập">
+									<option value="fa-money-bill">Tiền lương</option>
+									<option value="fa-gift">Thưởng</option>
+									<option value="fa-chart-line">Đầu tư</option>
+									<option value="fa-hand-holding-usd">Được tặng</option>
+								</optgroup>
+							</select>
+						</div>
+						<div class="col-4">
+							<label class="form-label fw-bold small">Màu Sắc</label>
+							<input type="color" class="form-control form-control-color w-100" id="catColor" value="#dc3545" oninput="updatePreview()">
+						</div>
+					</div>
+
+					<div class="text-end mt-4 pt-2 border-top">
+						<button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Hủy</button>
+						<button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Lưu</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="~/user/js/Categories.js"></script>
