@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
 {
     [Area("User")]
+    [Route("User/Dashboard")]
     // TẠM THỜI COMMENT ĐỂ TEST
     // [Authorize(Roles = "User")]
     public class DashboardController : Controller
