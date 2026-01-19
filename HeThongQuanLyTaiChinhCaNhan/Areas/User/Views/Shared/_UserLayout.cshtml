@@ -29,34 +29,34 @@
 
             <div class="list-group list-group-flush">
                 
-                <a href="/user/dashboard.html" class="list-group-item list-group-item-action active-menu">
+                <a class="list-group-item list-group-item-action active-menu" asp-area="User" asp-controller="Dashboard" asp-action="Index">
                     <i class="fas fa-tachometer-alt"></i> Tổng Quan
                 </a>
 
                 <div class="sidebar-divider">Quản lý tài chính</div>
 
-                <a href="/user/transactions.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Transactions" asp-action="Index">
                     <i class="fas fa-file-invoice-dollar"></i> Sổ Thu Chi
                 </a>
-                <a href="/user/wallets.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Wallets" asp-action="Index">
                     <i class="fas fa-wallet"></i> Ví Của Tôi
                 </a>
-                <a href="/user/budgets.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Budgets" asp-action="Index">
                     <i class="fas fa-chart-pie"></i> Ngân Sách
                 </a>
-                <a href="/user/goals.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Goals" asp-action="Index">
                     <i class="fas fa-bullseye"></i> Mục Tiêu
                 </a>
 
                 <div class="sidebar-divider">Cá nhân</div>
 
-                <a href="/user/categories.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Categories" asp-action="Index">
                     <i class="fas fa-tags"></i> Danh Mục
                 </a>
-                <a href="/user/tickets.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Tickets" asp-action="Index">
                     <i class="fas fa-headset"></i> Hỗ Trợ
                 </a>
-                <a href="/user/profile.html" class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" asp-area="User" asp-controller="Profile" asp-action="Index">
                     <i class="fas fa-user-circle"></i> Hồ Sơ
                 </a>
             </div>
@@ -134,7 +134,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
     <script src="~/user/js/Layout.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
 </body>
 
 </html>
