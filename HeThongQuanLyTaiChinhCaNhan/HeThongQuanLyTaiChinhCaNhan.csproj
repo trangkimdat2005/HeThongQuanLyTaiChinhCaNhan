@@ -7,10 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\User\Data\**" />
+    <Compile Remove="Areas\User\Models\**" />
+    <Content Remove="Areas\User\Data\**" />
+    <Content Remove="Areas\User\Models\**" />
+    <EmbeddedResource Remove="Areas\User\Data\**" />
+    <EmbeddedResource Remove="Areas\User\Models\**" />
+    <None Remove="Areas\User\Data\**" />
+    <None Remove="Areas\User\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
-    <Folder Include="Areas\User\Data\" />
-    <Folder Include="Areas\User\Models\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Bai_Tap_Lon\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj": {}
+    "D:\\code\\ky_I_nam_3\\Phân tích và thiết kế yêu cầu\\BTLCK\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj": {}
   },
   "projects": {
-    "D:\\Bai_Tap_Lon\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj": {
+    "D:\\code\\ky_I_nam_3\\Phân tích và thiết kế yêu cầu\\BTLCK\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Bai_Tap_Lon\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj",
+        "projectUniqueName": "D:\\code\\ky_I_nam_3\\Phân tích và thiết kế yêu cầu\\BTLCK\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj",
         "projectName": "HeThongQuanLyTaiChinhCaNhan",
-        "projectPath": "D:\\Bai_Tap_Lon\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj",
-        "packagesPath": "C:\\Users\\nghia\\.nuget\\packages\\",
-        "outputPath": "D:\\Bai_Tap_Lon\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\obj\\",
+        "projectPath": "D:\\code\\ky_I_nam_3\\Phân tích và thiết kế yêu cầu\\BTLCK\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan.csproj",
+        "packagesPath": "C:\\Users\\trang\\.nuget\\packages\\",
+        "outputPath": "D:\\code\\ky_I_nam_3\\Phân tích và thiết kế yêu cầu\\BTLCK\\HeThongQuanLyTaiChinhCaNhan\\HeThongQuanLyTaiChinhCaNhan\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\nghia\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\trang\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
