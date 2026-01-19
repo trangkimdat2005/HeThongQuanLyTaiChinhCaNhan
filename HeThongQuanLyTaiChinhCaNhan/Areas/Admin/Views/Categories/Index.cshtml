@@ -1,0 +1,103 @@
+﻿@using HeThongQuanLyTaiChinhCaNhan.Models
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    List<Category> categories = ViewBag.Categories as List<Category>;
+}
+@Html.AntiForgeryToken()
+
+<link href="~/admin/css/catagories.css" rel="stylesheet" />
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Quản Lý Danh Mục</h3>
+        <p class="text-muted small mb-0">Thiết lập các nhóm chi tiêu/thu nhập mặc định</p>
+    </div>
+    <a class="btn btn-primary shadow-sm" href="/Admin/Categories/Add">
+        <i class="fas fa-plus me-2"></i>Thêm Danh Mục
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <div class="row align-items-center">
+            <div class="col-auto fw-bold text-muted small">Lọc theo loại:</div>
+            <div class="col-auto">
+                <select class="form-select form-select-sm border-0 bg-light fw-bold text-primary" id="filterType">
+                    <option value="">-- Tất cả --</option>
+                    <option value="Income">Khoản Thu (Income)</option>
+                    <option value="Expense">Khoản Chi (Expense)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table id="tableCategory" class="table table-hover align-middle" style="width:100%">
+            <thead class="bg-light">
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th>Tên Danh Mục</th>
+                    <th>Loại (Type)</th>
+                    <th>Màu sắc (Color)</th>
+                    <th>Icon Class</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (categories != null && categories.Any())
+                {
+                    foreach (var item in categories)
+                    {
+                        <tr>
+                            <td><span class="text-muted small">#@item.CategoryId</span></td>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box me-2" style="background-color: @item.Color; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 5px; color: white;">
+                                        <i class="fas @item.Icon"></i>
+                                    </div>
+                                    <span class="fw-bold">@item.CategoryName</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (item.Type == "Income")
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Khoản Thu</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Khoản Chi</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="rounded-circle border me-2" style="width:15px;height:15px;background:@item.Color"></span>
+                                    <span class="small text-muted">@item.Color</span>
+                                </div>
+                            </td>
+
+                            <td><code class="small text-muted">@item.Icon</code></td>
+
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-light text-primary me-1" href="/Admin/Categories/Edit/@item.CategoryId">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-light text-danger" onclick="deleteCategory(@item.CategoryId)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/admin/js/catagories.js"></script>
+}

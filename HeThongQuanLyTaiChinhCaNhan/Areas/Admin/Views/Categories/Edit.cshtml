@@ -1,0 +1,123 @@
+﻿@model HeThongQuanLyTaiChinhCaNhan.Models.Category
+
+@{
+    ViewData["Title"] = "Cập Nhật Danh Mục";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Cập Nhật Danh Mục</h3>
+        <p class="text-muted small mb-0">Chỉnh sửa thông tin danh mục #@Model.CategoryId</p>
+    </div>
+    <a href="/Admin/Categories" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                <h6 class="fw-bold text-muted mb-4">Xem Trước Hiển Thị</h6>
+
+                <div class="mobile-preview p-3 rounded-4 shadow-sm" style="width: 280px; background-color: #fff; border: 1px solid #eee;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div id="previewBox" class="icon-box-lg me-3"
+                                 style="background-color: @Model.Color; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                                <i id="previewIcon" class="fas @Model.Icon text-white fa-lg"></i>
+                            </div>
+                            <div class="text-start">
+                                <h6 class="fw-bold mb-0 text-dark" id="previewName">@Model.CategoryName</h6>
+                                <small class="text-muted" id="previewType">
+                                    @(Model.Type == "Income" ? "Thu nhập" : "Chi tiêu")
+                                </small>
+                            </div>
+                        </div>
+                        <div class="fw-bold text-danger">- 50.000 đ</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-muted small fst-italic">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Bản xem trước hiện tại.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h5 class="fw-bold text-primary m-0">Thông Tin Chi Tiết</h5>
+            </div>
+            <div class="card-body pt-0">
+                <form id="editCategoryForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="catID" name="CategoryId" value="@Model.CategoryId" />
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Tên Danh Mục <span class="text-danger">*</span></label>
+                        <input asp-for="CategoryName" type="text" class="form-control form-control-lg" id="catName" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Loại Giao Dịch</label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input asp-for="Type" type="radio" class="btn-check" id="typeExpense" value="Expense">
+                                <label class="btn btn-outline-danger w-100 p-3 rounded-3 d-flex align-items-center justify-content-center gap-2" for="typeExpense">
+                                    <i class="fas fa-shopping-cart"></i> Khoản Chi
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <input asp-for="Type" type="radio" class="btn-check" id="typeIncome" value="Income">
+                                <label class="btn btn-outline-success w-100 p-3 rounded-3 d-flex align-items-center justify-content-center gap-2" for="typeIncome">
+                                    <i class="fas fa-money-bill-wave"></i> Khoản Thu
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label fw-bold small">Màu Sắc</label>
+                            <div class="d-flex align-items-center">
+                                <input asp-for="Color" type="color" class="form-control form-control-color shadow-sm" id="catColor">
+                                <span class="ms-2 text-muted small" id="colorCode">@Model.Color</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Biểu Tượng</label>
+                            <select asp-for="Icon" class="form-select" id="catIcon">
+                                <optgroup label="Chi Tiêu">
+                                    <option value="fa-utensils">Ăn uống</option>
+                                    <option value="fa-shopping-cart">Mua sắm</option>
+                                    <option value="fa-home">Nhà cửa</option>
+                                    <option value="fa-car">Di chuyển</option>
+                                    <option value="fa-pills">Y tế</option>
+                                </optgroup>
+                                <optgroup label="Thu Nhập">
+                                    <option value="fa-money-bill">Tiền lương</option>
+                                    <option value="fa-gift">Thưởng</option>
+                                    <option value="fa-chart-line">Đầu tư</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25">
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/admin/js/editCategories.js"></script>
+}

@@ -1,0 +1,142 @@
+
+
+<link href="~/user/css/Transactions.css" rel="stylesheet" />
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<div>
+		<h3 class="fw-bold text-dark mb-0">Sổ Thu Chi</h3>
+		<p class="text-muted small mb-0">Quản lý chi tiết lịch sử dòng tiền</p>
+	</div>
+	<button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openTransactionModal('add')">
+		<i class="fas fa-plus me-2"></i> Thêm Giao Dịch
+	</button>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+	<div class="card-header bg-white py-3" data-bs-toggle="collapse" href="#filterCollapse" role="button" aria-expanded="false">
+		<div class="d-flex justify-content-between align-items-center">
+			<h6 class="m-0 fw-bold text-primary"><i class="fas fa-filter me-2"></i>Bộ Lọc & Tìm Kiếm</h6>
+			<i class="fas fa-chevron-down text-muted small"></i>
+		</div>
+	</div>
+	<div class="collapse show" id="filterCollapse">
+		<div class="card-body">
+			<div class="row g-3">
+				<div class="col-md-3">
+					<label class="small fw-bold text-muted mb-1">Ví thanh toán</label>
+					<select class="form-select bg-light border-0 fw-bold" id="filterWallet">
+						<option value="">Tất cả ví</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label class="small fw-bold text-muted mb-1">Loại giao dịch</label>
+					<select class="form-select bg-light border-0 fw-bold" id="filterType">
+						<option value="">Tất cả</option>
+						<option value="Income">Khoản Thu (+)</option>
+						<option value="Expense">Khoản Chi (-)</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label class="small fw-bold text-muted mb-1">Từ ngày</label>
+					<input type="date" class="form-control bg-light border-0 fw-bold" id="filterFromDate">
+				</div>
+				<div class="col-md-3">
+					<label class="small fw-bold text-muted mb-1">Đến ngày</label>
+					<input type="date" class="form-control bg-light border-0 fw-bold" id="filterToDate">
+				</div>
+
+				<div class="col-12 text-end mt-3">
+					<button class="btn btn-light text-secondary me-2" onclick="resetFilter()">Đặt lại</button>
+					<button class="btn btn-primary px-4 fw-bold" onclick="applyFilter()">Áp dụng lọc</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="card border-0 shadow-sm">
+	<div class="card-body">
+		<table id="tableTransaction" class="table table-hover align-middle" style="width:100%">
+			<thead class="bg-light">
+				<tr>
+					<th class="ps-3">Ngày</th>
+					<th>Danh mục</th>
+					<th>Diễn giải (Note)</th>
+					<th>Ví</th>
+					<th class="text-end pe-3">Số tiền</th>
+					<th class="text-end">Hành động</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="modal fade" id="transactionModal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow">
+			<div class="modal-header border-bottom-0 pb-0">
+				<h5 class="modal-title fw-bold text-primary" id="modalTitle">Thêm Giao Dịch Mới</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body pt-3">
+				<form id="transactionForm">
+					<input type="hidden" id="transID">
+
+					<div class="d-flex justify-content-center mb-4 bg-light rounded-pill p-1 mx-5">
+						<div class="w-50 text-center">
+							<input type="radio" class="btn-check" name="transType" id="typeExpense" value="Expense" checked onchange="loadCategoriesByType('Expense')">
+							<label class="btn btn-sm btn-outline-danger border-0 rounded-pill w-100 fw-bold py-2" for="typeExpense">Khoản Chi</label>
+						</div>
+						<div class="w-50 text-center">
+							<input type="radio" class="btn-check" name="transType" id="typeIncome" value="Income" onchange="loadCategoriesByType('Income')">
+							<label class="btn btn-sm btn-outline-success border-0 rounded-pill w-100 fw-bold py-2" for="typeIncome">Khoản Thu</label>
+						</div>
+					</div>
+
+					<div class="mb-4">
+						<label class="form-label fw-bold small text-muted text-uppercase">Số tiền</label>
+						<div class="input-group input-group-lg">
+							<input type="number" class="form-control fw-bold text-primary" id="transAmount" placeholder="0" required>
+							<span class="input-group-text bg-white border-start-0 fw-bold text-muted">VNĐ</span>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-md-6">
+							<label class="form-label fw-bold small">Danh mục</label>
+							<select class="form-select" id="transCategory" required>
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-bold small">Ví thanh toán</label>
+							<select class="form-select" id="transWallet" required>
+							</select>
+						</div>
+					</div>
+
+					<div class="row g-3 mb-3">
+						<div class="col-md-6">
+							<label class="form-label fw-bold small">Ngày giao dịch</label>
+							<input type="date" class="form-control" id="transDate" required>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label fw-bold small">Ghi chú (Tùy chọn)</label>
+							<input type="text" class="form-control" id="transDesc" placeholder="VD: Ăn sáng...">
+						</div>
+					</div>
+
+					<div class="text-end mt-4 pt-2 border-top">
+						<button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Hủy</button>
+						<button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+							<i class="fas fa-save me-2"></i>Lưu Lại
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="~/user/js/Transactions.js"></script>
