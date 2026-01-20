@@ -2,7 +2,7 @@
 
 namespace HeThongQuanLyTaiChinhCaNhan.Service.Interfaces
 {
-    public interface IQuanLyServices
+    public interface IBaseService
     {
         List<T> GetList<T>() where T : class;
 

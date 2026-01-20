@@ -1,9 +1,10 @@
 ﻿using HeThongQuanLyTaiChinhCaNhan.Models;
+using HeThongQuanLyTaiChinhCaNhan.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HeThongQuanLyTaiChinhCaNhan.Service
 {
-    public class BaseService
+    public class BaseService : IBaseService
     {
         protected readonly AppDbContext context;
         public BaseService()
@@ -199,6 +200,21 @@ namespace HeThongQuanLyTaiChinhCaNhan.Service
                 return null;
             }
 
+        }
+
+        public byte[] ConvertImageToByteArray(string filePath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ConvertToBase64Image(byte[] bytes, string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string HashPassword(string password)
+        {
+            throw new NotImplementedException();
         }
     }
 }
