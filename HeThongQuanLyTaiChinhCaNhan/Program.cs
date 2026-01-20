@@ -23,7 +23,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Auth/Login"; // Nếu chưa đăng nhập mà cố vào trang kín -> Đá về trang này
         options.AccessDeniedPath = "/Auth/AccessDenied"; // Nếu đăng nhập rồi mà không đủ quyền -> Đá về trang này
     });
-
+// ??ng ký Email Service
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddMemoryCache();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

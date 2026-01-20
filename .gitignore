@@ -1,0 +1,114 @@
+## =========================
+## Visual Studio 2022 Ignore
+## =========================
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# VS2022 cache folders
+.vs/
+.vscode/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NCrunch, ReSharper, Rider, etc.
+_ReSharper*/
+*.DotSettings.user
+.idea/
+*.ncrunchsolution
+*.ncrunchproject
+*.nunit.xml
+
+# Tự sinh bởi VS
+*.pdb
+*.cache
+*.dbmdl
+*.bak
+*.log
+*.vspscc
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vsmdi
+*.psess
+*.vsp
+*.vspx
+*.pidb
+*.svclog
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+# Build artifacts
+*.dll
+*.exe
+*.appx
+*.appxrecipe
+*.build
+*.manifest
+*.msi
+*.msix
+*.msixupload
+*.msixbundle
+*.zip
+*.tar.gz
+
+# NuGet packages
+*.nupkg
+*.snupkg
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Azure
+*.Publish.xml
+*.azurePubxml
+PublishScripts/
+
+# Others
+*.DS_Store
+*.swp
+*.bak
+*.tmp
+*.temp
+
+docker-compose.override.yml

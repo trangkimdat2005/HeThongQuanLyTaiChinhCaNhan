@@ -1,174 +1,119 @@
-﻿// Dữ liệu giả (Mock Tickets)
-var mockTickets = [
-    {
-        TicketID: 101,
-        UserID: "user-01",
-        UserName: "Nguyễn Văn A",
-        UserEmail: "nguyenvana@test.com",
-        Avatar: "https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random",
-        QuestionType: "Technical Issue",
-        RespondType: "Email",
-        Description: "Tôi không thể thay đổi icon của ví tiền, hệ thống báo lỗi 500 khi bấm nút lưu.",
-        Status: "Open",
-        CreatedAt: "2026-01-10 09:30"
-    },
-    {
-        TicketID: 102,
-        UserID: "user-02",
-        UserName: "Trần Thị B",
-        UserEmail: "tranthib@test.com",
-        Avatar: "https://ui-avatars.com/api/?name=Tran+Thi+B&background=random",
-        QuestionType: "Account",
-        RespondType: "Phone",
-        Description: "Tôi muốn đổi email đăng nhập do email cũ bị mất mật khẩu.",
-        Status: "Pending",
-        CreatedAt: "2026-01-09 14:15"
-    },
-    {
-        TicketID: 103,
-        UserID: "user-01",
-        UserName: "Nguyễn Văn A",
-        UserEmail: "nguyenvana@test.com",
-        Avatar: "https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random",
-        QuestionType: "Payment",
-        RespondType: "Email",
-        Description: "Tôi đã nạp VIP nhưng chưa thấy kích hoạt.",
-        Status: "Resolved",
-        CreatedAt: "2026-01-08 10:00"
-    }
-];
-
-var table;
-var currentTicketId = null;
+﻿var table;
 
 $(document).ready(function () {
-
-    // 1. Khởi tạo DataTable
+    // 1. Khởi tạo DataTable (Không cần data source giả nữa vì HTML đã có dữ liệu)
     table = $('#tableTicket').DataTable({
-        data: mockTickets,
-        columns: [
-            {
-                data: 'TicketID',
-                render: function (data) { return `<span class="fw-bold text-muted">#${data}</span>`; }
-            },
-            {
-                data: 'UserName', // Hiển thị User + Email
-                render: function (data, type, row) {
-                    return `
-                        <div class="d-flex align-items-center">
-                            <img src="${row.Avatar}" class="rounded-circle me-2" width="30">
-                            <div>
-                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">${data}</div>
-                                <div class="text-muted small" style="font-size: 0.75rem;">${row.UserEmail}</div>
-                            </div>
-                        </div>
-                    `;
-                }
-            },
-            {
-                data: 'QuestionType',
-                render: function (data) { return `<span class="badge bg-light text-dark border">${data}</span>`; }
-            },
-            {
-                data: 'Description',
-                render: function (data) {
-                    // Cắt ngắn nội dung nếu dài quá 50 ký tự
-                    return data.length > 50 ? data.substr(0, 50) + '...' : data;
-                }
-            },
-            {
-                data: 'Status',
-                render: function (data) {
-                    // Map class CSS theo status
-                    return `<span class="badge badge-status-${data} px-3 py-1 rounded-pill">${getStatusVN(data)}</span>`;
-                }
-            },
-            { data: 'CreatedAt', render: function (data) { return `<span class="small text-muted">${data}</span>`; } },
-            {
-                data: null,
-                className: "text-end",
-                render: function (data, type, row) {
-                    return `<button class="btn btn-sm btn-outline-primary fw-bold" onclick="openTicketModal(${row.TicketID})">Chi tiết</button>`;
-                }
-            }
-        ],
-        order: [[5, 'desc']], // Sắp xếp ngày mới nhất lên đầu
-        language: { search: "Tìm kiếm:", lengthMenu: "Hiện _MENU_", info: "Trang _PAGE_ / _PAGES_", paginate: { first: "«", last: "»", next: "›", previous: "‹" } }
+        language: {
+            search: "Tìm kiếm:",
+            lengthMenu: "Hiện _MENU_ dòng",
+            info: "Trang _PAGE_ / _PAGES_",
+            paginate: { first: "«", last: "»", next: "›", previous: "‹" },
+            zeroRecords: "Không tìm thấy yêu cầu nào"
+        },
+        order: [[5, 'desc']], // Sắp xếp theo ngày (Cột thứ 6 - index 5)
+        columnDefs: [
+            { orderable: false, targets: -1 } // Không sort cột nút bấm
+        ]
     });
 
-    // 2. Xử lý Bộ lọc
+    // 2. Xử lý Bộ lọc (Filter)
     $('#filterStatus').on('change', function () {
-        table.column(4).search($(this).val()).draw(); // Cột 4 là Status
+        // Tìm text tương ứng để search trong cột Status (Cột index 4)
+        // Lưu ý: Text hiển thị trong bảng là "Chưa xử lý", "Đã xong"...
+        var val = $(this).val();
+        var searchText = "";
+        if (val === 'Open') searchText = "Chưa xử lý";
+        else if (val === 'Pending') searchText = "Đang chờ";
+        else if (val === 'Resolved') searchText = "Đã xong";
+
+        table.column(4).search(searchText).draw();
     });
 
     $('#filterType').on('change', function () {
-        table.column(2).search($(this).val()).draw(); // Cột 2 là Type
+        table.column(2).search($(this).val()).draw(); // Cột Type (index 2)
+    });
+
+    // 3. Xử lý sự kiện click nút "Chi tiết"
+    // Dùng delegate event (on click) để hoạt động cả khi chuyển trang trong DataTable
+    $('#tableTicket').on('click', '.btn-detail', function () {
+        var btn = $(this);
+
+        // Lấy dữ liệu từ data attributes
+        var id = btn.data('id');
+        var username = btn.data('username');
+        var email = btn.data('email');
+        var avatar = btn.data('avatar');
+        var type = btn.data('type');
+        var date = btn.data('date');
+        var desc = btn.data('desc');
+        var respondType = btn.data('respondtype');
+        var status = btn.data('status');
+        var response = btn.data('response'); // Nội dung admin đã trả lời (nếu có)
+
+        // Đổ vào Modal
+        $('#hiddenTicketId').val(id);
+        $('#modalTicketID').text(id);
+        $('#modalUserName').text(username);
+        $('#modalUserEmail').text(email);
+        $('#modalAvatar').attr('src', avatar);
+        $('#modalType').text(type);
+        $('#modalDate').text(date);
+        $('#modalDesc').text(desc);
+        $('#modalRespondType').text(respondType);
+        $('#modalStatusSelect').val(status);
+        $('#adminResponse').val(response || ""); // Nếu chưa có thì để trống
+
+        // Mở Modal
+        var myModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+        myModal.show();
     });
 });
 
-// --- CÁC HÀM XỬ LÝ ---
-
-// Helper: Dịch Status sang tiếng Việt
-function getStatusVN(status) {
-    if (status === 'Open') return 'Chưa xử lý';
-    if (status === 'Pending') return 'Đang chờ';
-    if (status === 'Resolved') return 'Đã xong';
-    return status;
-}
-
-// 1. Mở Modal Chi tiết
-function openTicketModal(id) {
-    var ticket = mockTickets.find(x => x.TicketID === id);
-    if (!ticket) return;
-
-    currentTicketId = id;
-
-    // Đổ dữ liệu vào Modal
-    $('#modalTicketID').text(ticket.TicketID);
-    $('#modalUserName').text(ticket.UserName);
-    $('#modalUserEmail').text(ticket.UserEmail);
-    $('#modalAvatar').attr('src', ticket.Avatar);
-    $('#modalType').text(ticket.QuestionType);
-    $('#modalDate').text(ticket.CreatedAt);
-    $('#modalDesc').text(ticket.Description);
-    $('#modalRespondType').text(ticket.RespondType);
-    $('#modalStatusSelect').val(ticket.Status);
-
-    var myModal = new bootstrap.Modal(document.getElementById('ticketModal'));
-    myModal.show();
-}
-
-// 2. Gửi phản hồi (Update Status)
+// --- HÀM GỬI PHẢN HỒI (AJAX) ---
 function submitReply() {
-    var newStatus = $('#modalStatusSelect').val();
+    var id = $('#hiddenTicketId').val();
+    var responseText = $('#adminResponse').val();
+    var status = $('#modalStatusSelect').val();
+    var token = $('input[name="__RequestVerificationToken"]').val();
+
+    if (!responseText.trim()) {
+        Swal.fire('Chưa nhập nội dung', 'Vui lòng nhập nội dung phản hồi.', 'warning');
+        return;
+    }
 
     // Đóng Modal
-    bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
+    // bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
 
-    // Loading & Success
     Swal.fire({
         title: 'Đang gửi phản hồi...',
-        timer: 1500,
+        allowOutsideClick: false,
         didOpen: () => { Swal.showLoading() }
-    }).then(() => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Đã cập nhật!',
-            text: `Ticket #${currentTicketId} đã chuyển sang trạng thái: ${getStatusVN(newStatus)}`,
-        }).then(() => {
-            // Cập nhật lại dữ liệu trong bảng (Giả lập)
-            var ticketIndex = mockTickets.findIndex(x => x.TicketID === currentTicketId);
-            if (ticketIndex !== -1) {
-                mockTickets[ticketIndex].Status = newStatus;
-                table.clear().rows.add(mockTickets).draw(); // Redraw table
-            }
-        });
     });
-}
 
-function refreshTable() {
-    table.search('').columns().search('').draw();
-    $('#filterStatus').val('');
-    $('#filterType').val('');
-    Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Đã làm mới dữ liệu', showConfirmButton: false, timer: 1500 });
+    $.ajax({
+        url: '/Admin/Support/Reply',
+        type: 'POST',
+        data: {
+            id: id,
+            adminResponse: responseText,
+            status: status
+        },
+        headers: { "RequestVerificationToken": token },
+        success: function (res) {
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: res.message
+                }).then(() => {
+                    location.reload(); // Load lại trang để cập nhật dữ liệu mới
+                });
+            } else {
+                Swal.fire('Lỗi', res.message, 'error');
+            }
+        },
+        error: function () {
+            Swal.fire('Lỗi', 'Không thể kết nối đến server.', 'error');
+        }
+    });
 }

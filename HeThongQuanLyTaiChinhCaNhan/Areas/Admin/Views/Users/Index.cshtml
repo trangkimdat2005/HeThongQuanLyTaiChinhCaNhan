@@ -13,7 +13,7 @@
         <i class="fas fa-plus me-2"></i>Thêm Mới
     </a>
 </div>
-
+@Html.AntiForgeryToken()
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <table id="tableUser" class="table table-hover align-middle" style="width:100%">
@@ -62,7 +62,7 @@
                             </td>
 
                             <td>
-                                @if (true)
+                                @if (item.IsActive == true)
                                 {
                                     <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Active</span>
                                 }
@@ -80,7 +80,9 @@
                                 <a class="btn btn-sm btn-light text-primary me-1" title="Sửa" href="/Admin/Users/Edit/@item.UserId">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <button class="btn btn-sm btn-light text-danger" title="Xóa" onclick="deleteUser(@item.UserId, '@item.FullName')">
+                                <button class="btn btn-sm btn-light text-danger"
+                                        onclick="deleteUser('@item.UserId', '@item.FullName')"
+                                        title="Xóa">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </td>
