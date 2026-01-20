@@ -17,110 +17,47 @@
     background-color: #fff;
 }
 
-.card-header-login {
-    background-color: #fff;
-    padding: 40px 40px 10px 40px;
-    text-align: center;
-}
-
 .card-body-login {
-    padding: 20px 40px 40px 40px;
+    padding: 40px;
 }
 
 .form-control {
     border-radius: 50px;
     padding: 12px 20px;
+    font-size: 0.9rem;
     height: 50px;
-    padding-left: 45px; /* Chừa chỗ cho icon */
-}
-/* Icon nằm bên trái (Email, Ổ khóa) */
-.input-icon {
-    position: absolute;
-    left: 20px;
-    /* --- BẮT ĐẦU ĐOẠN FIX --- */
-    top: 50%; /* Đẩy icon xuống 50% chiều cao của thẻ cha */
-    transform: translateY(-50%); /* Kéo ngược lại 50% chiều cao của chính nó để nằm giữa tuyệt đối */
-    /* --- KẾT THÚC ĐOẠN FIX --- */
-
-    color: #b7b9cc;
-    z-index: 10;
-    pointer-events: none; /* Quan trọng: để khi bấm vào icon thì trỏ chuột vẫn focus vào ô input */
 }
 
-/* Icon con mắt (Ẩn/Hiện mật khẩu) */
-.password-toggle {
-    position: absolute;
-    right: 20px;
-    /* --- BẮT ĐẦU ĐOẠN FIX --- */
-    top: 50%;
-    transform: translateY(-50%);
-    /* --- KẾT THÚC ĐOẠN FIX --- */
-
-    cursor: pointer;
-    color: #b7b9cc;
-    z-index: 10;
-}
-
-    .password-toggle:hover {
-        color: #4e73df;
-    }
-
-.btn-login {
+.btn-custom {
     border-radius: 50px;
     padding: 12px;
+    font-size: 1rem;
     font-weight: bold;
     background-color: #4e73df;
     border: none;
+    transition: all 0.3s;
+    color: white;
+    width: 100%;
 }
 
-    .btn-login:hover {
+    .btn-custom:hover {
         background-color: #2e59d9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(78, 115, 223, 0.3);
     }
 
-.divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 20px 0;
-    color: #b7b9cc;
-    font-size: 0.8rem;
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
 }
 
-    .divider::before, .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #e3e6f0;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    .divider:not(:empty)::before {
-        margin-right: .5em;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
-
-    .divider:not(:empty)::after {
-        margin-left: .5em;
-    }
-
-.social-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e3e6f0;
-    color: #5a5c69;
-    text-decoration: none;
-    transition: 0.3s;
-}
-
-    .social-btn:hover {
-        background-color: #f8f9fc;
-        color: #4e73df;
-    }
-
-/* Style cho chữ báo lỗi */
-.text-danger {
-    font-size: 0.8rem;
-    margin-top: 5px;
-    margin-left: 10px;
 }
