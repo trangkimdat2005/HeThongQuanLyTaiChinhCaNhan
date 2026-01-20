@@ -1,4 +1,6 @@
 ﻿using HeThongQuanLyTaiChinhCaNhan.Models;
+using HeThongQuanLyTaiChinhCaNhan.Service;
+using HeThongQuanLyTaiChinhCaNhan.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,9 @@ var connectionString = builder.Configuration.GetConnectionString("MoneyMasterCon
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IBaseService, BaseService>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

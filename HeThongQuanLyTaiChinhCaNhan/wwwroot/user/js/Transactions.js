@@ -1,4 +1,6 @@
-﻿// ==================== 1. MOCK DATA ====================
+﻿const { get, data } = require("jquery");
+
+// ==================== 1. MOCK DATA ====================
 var mockWallets = [
     { id: 1, name: "Tiền mặt" },
     { id: 2, name: "Vietcombank" },
@@ -222,3 +224,22 @@ function resetFilter() {
     table.search('').columns().search('').draw();
     applyFilter(); // Reset custom filter
 }
+
+
+$(async function () {
+    try {
+        const response = await fetch('/User/Transactions/GetAll');
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        // xử lý data ở đây
+        // render table, chart, v.v.
+    } catch (err) {
+        console.error(err);
+    }
+});
