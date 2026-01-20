@@ -1,51 +1,99 @@
-﻿document.getElementById('registerForm').addEventListener('submit', function (e) {
-    e.preventDefault();
+﻿// XỬ LÝ JS
+$(document).ready(function () {
 
-    // Lấy giá trị
-    const p1 = document.getElementById('password').value;
-    const p2 = document.getElementById('confirmPassword').value;
-    const name = document.getElementById('fullName').value;
+    // BƯỚC 1: GỬI THÔNG TIN ĐĂNG KÝ -> NHẬN OTP
+    $('#step1Form').on('submit', function (e) {
+        e.preventDefault();
 
-    // 1. Validate Mật khẩu khớp
-    if (p1 !== p2) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi',
-            text: 'Mật khẩu nhập lại không khớp!',
-        });
-        return;
-    }
-
-    // 2. Validate độ dài (Ví dụ)
-    if (p1.length < 6) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Mật khẩu yếu',
-            text: 'Mật khẩu phải có ít nhất 6 ký tự.',
-        });
-        return;
-    }
-
-    // 3. Giả lập gửi API đăng ký
-    let timerInterval;
-    Swal.fire({
-        title: 'Đang tạo tài khoản...',
-        html: 'Vui lòng chờ trong giây lát.',
-        timer: 1500,
-        timerProgressBar: true,
-        didOpen: () => {
-            Swal.showLoading();
+        var password = $('#Password').val();
+        var confirm = $('#ConfirmPassword').val();
+        if (password !== confirm) {
+            Swal.fire('Lỗi', 'Mật khẩu xác nhận không khớp', 'error');
+            return;
         }
-    }).then(() => {
-        Swal.fire({
-            icon: 'success',
-            title: 'Đăng ký thành công!',
-            text: 'Chào mừng ' + name + '! Vui lòng đăng nhập để tiếp tục.',
-            confirmButtonText: 'Đến trang Đăng nhập'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = 'login.html';
+
+        var formData = $(this).serialize(); // Lấy data form
+
+        // Hiển thị loading
+        var btn = $(this).find('button[type="submit"]');
+        var originalText = btn.html();
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...').prop('disabled', true);
+
+        $.ajax({
+            url: '/Auth/RegisterStep1',
+            type: 'POST',
+            data: formData,
+            success: function (res) {
+                btn.html(originalText).prop('disabled', false);
+                if (res.success) {
+                    // Chuyển sang bước 2
+                    $('#step1Form').hide();
+                    $('#homeLink').hide();
+                    $('#step2Form').show();
+
+                    // Cập nhật giao diện
+                    $('#headerTitle').text('Xác Thực Email');
+                    $('#headerSub').text('Vui lòng kiểm tra hộp thư đến (cả mục Spam)');
+                    $('#displayEmail').text($('#Email').val());
+
+                    Swal.fire({ icon: 'success', title: 'Đã gửi OTP!', text: 'Vui lòng kiểm tra email.', timer: 1500, showConfirmButton: false });
+                } else {
+                    Swal.fire('Lỗi', res.message, 'error');
+                }
+            },
+            error: function () {
+                btn.html(originalText).prop('disabled', false);
+                Swal.fire('Lỗi', 'Không kết nối được server', 'error');
+            }
+        });
+    });
+
+    // BƯỚC 2: GỬI OTP -> TẠO TÀI KHOẢN
+    $('#step2Form').on('submit', function (e) {
+        e.preventDefault();
+
+        var otp = $('#otpCode').val();
+        var email = $('#Email').val();
+        var token = $('input[name="__RequestVerificationToken"]').val(); // Lấy token từ form 1
+
+        if (otp.length < 6) {
+            Swal.fire('Lỗi', 'Vui lòng nhập đủ 6 số OTP', 'warning');
+            return;
+        }
+
+        $.ajax({
+            url: '/Auth/RegisterStep2',
+            type: 'POST',
+            data: {
+                Email: email,
+                OtpCode: otp,
+                __RequestVerificationToken: token
+            },
+            success: function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Tài khoản đã được tạo. Vui lòng đăng nhập.',
+                        confirmButtonText: 'Đăng nhập ngay'
+                    }).then((result) => {
+                        window.location.href = '/Auth/Login';
+                    });
+                } else {
+                    Swal.fire('Thất bại', res.message, 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Lỗi', 'Lỗi hệ thống', 'error');
             }
         });
     });
 });
+
+function backToStep1() {
+    $('#step2Form').hide();
+    $('#step1Form').show();
+    $('#homeLink').show();
+    $('#headerTitle').text('Tạo Tài Khoản');
+    $('#headerSub').text('Bắt đầu hành trình quản lý tài chính ngay hôm nay!');
+}

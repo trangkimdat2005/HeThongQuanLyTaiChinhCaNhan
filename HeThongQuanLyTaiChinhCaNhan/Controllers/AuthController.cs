@@ -1,10 +1,12 @@
 ﻿using HeThongQuanLyTaiChinhCaNhan.Models;
 using HeThongQuanLyTaiChinhCaNhan.Service;
+using HeThongQuanLyTaiChinhCaNhan.Services.Interfaces;
 using HeThongQuanLyTaiChinhCaNhan.ViewModels.MoneyMaster.ViewModels; // Đảm bảo namespace này đúng với file LoginVM của bạn
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace HeThongQuanLyTaiChinhCaNhan.Controllers
@@ -13,9 +15,14 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
     {
         private readonly AppDbContext context;
 
-        public AuthController(AppDbContext context)
+        private readonly IEmailService _emailService;
+        private readonly IMemoryCache _cache; // Inject Cache
+
+        public AuthController(AppDbContext _context, IEmailService emailService, IMemoryCache cache)
         {
-            this.context = context;
+            context = _context;
+            _emailService = emailService;
+            _cache = cache;
         }
 
         // GET: Hiển thị trang Login
@@ -90,5 +97,161 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home", new { area = "" });
         }
+        // 1. XỬ LÝ YÊU CẦU QUÊN MẬT KHẨU (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            // LOGIC BẢO MẬT: Dù email có hay không, vẫn báo thành công để tránh dò user
+            if (user != null)
+            {
+                // Tạo Token định danh
+                string token = Guid.NewGuid().ToString();
+
+                // Lưu vào Cache: Key=Token -> Value=Email (Sống trong 15 phút)
+                _cache.Set(token, email, TimeSpan.FromMinutes(15));
+
+                // Tạo Link kích hoạt
+                string resetLink = Url.Action("ConfirmReset", "Auth", new { token = token }, Request.Scheme);
+
+                // Gửi Mail
+                string content = $@"
+                    <h3>Yêu cầu cấp lại mật khẩu</h3>
+                    <p>Hệ thống nhận được yêu cầu từ tài khoản: {email}</p>
+                    <p>Vui lòng nhấn vào link bên dưới để nhận mật khẩu mới (Link chỉ có hiệu lực 1 lần trong 15 phút):</p>
+                    <p><a href='{resetLink}' style='background-color:#4e73df;color:white;padding:10px 15px;text-decoration:none;border-radius:5px;'>Lấy mật khẩu mới</a></p>";
+
+                try { await _emailService.SendEmailAsync(email, "Xác nhận cấp lại mật khẩu", content); }
+                catch { /* Log lỗi */ }
+            }
+
+            TempData["ForgotPasswordSuccess"] = "Hệ thống đã gửi hướng dẫn vào email của bạn.";
+            return RedirectToAction("Login");
+        }
+
+        // 2. XỬ LÝ KHI BẤM LINK TRONG EMAIL (GET)
+        [HttpGet]
+        public async Task<IActionResult> ConfirmReset(string token)
+        {
+            // Kiểm tra Token trong Cache
+            if (!_cache.TryGetValue(token, out string email))
+            {
+                TempData["ErrorMessage"] = "Liên kết không hợp lệ hoặc đã hết hạn (chỉ dùng được 1 lần).";
+                return RedirectToAction("Login");
+            }
+
+            // Tìm User
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) return RedirectToAction("Login");
+
+            // --- SINH MẬT KHẨU MỚI ---
+            string newRandomPassword = PasswordHelper.GenerateRandomPassword(8); // Sinh chuỗi ngẫu nhiên 8 ký tự
+
+            // Cập nhật DB
+            user.PasswordHash = PasswordHelper.HashPassword(newRandomPassword);
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+
+            // --- QUAN TRỌNG: XÓA TOKEN KHỎI CACHE NGAY ---
+            // Để link này không thể dùng lại lần 2
+            _cache.Remove(token);
+
+            // Trả về View hiển thị mật khẩu mới cho người dùng copy
+            ViewBag.NewPassword = newRandomPassword;
+            return View();
+        }
+        // --- CẬP NHẬT AUTH CONTROLLER ---
+        [HttpPost]
+        [ValidateAntiForgeryToken] // Bước 1: Nhận thông tin, gửi OTP
+        public async Task<IActionResult> RegisterStep1(RegisterVM model)
+        {
+            if (!ModelState.IsValid) return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+
+            // 1. Check Email trùng trong DB
+            if (await context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                return Json(new { success = false, message = "Email này đã được sử dụng." });
+            }
+
+            // 2. Tạo OTP ngẫu nhiên (6 số)
+            string otp = new Random().Next(100000, 999999).ToString();
+
+            // 3. Chuẩn bị dữ liệu tạm (Hash pass luôn cho an toàn)
+            var tempData = new TempRegisterData
+            {
+                FullName = model.FullName,
+                Email = model.Email,
+                HashedPassword = PasswordHelper.HashPassword(model.Password),
+                OtpCode = otp
+            };
+
+            // 4. Lưu vào Cache (Sống 5 phút)
+            // Key là "REG_" + Email để tránh trùng với các key khác
+            _cache.Set("REG_" + model.Email, tempData, TimeSpan.FromMinutes(5));
+
+            // 5. Gửi Email
+            string content = $@"
+        <h3>Mã xác thực đăng ký (OTP)</h3>
+        <p>Xin chào {model.FullName},</p>
+        <p>Mã OTP của bạn là: <b style='font-size:20px;color:red'>{otp}</b></p>
+        <p>Mã này sẽ hết hạn sau 5 phút.</p>";
+
+            try
+            {
+                await _emailService.SendEmailAsync(model.Email, "Xác thực đăng ký MoneyMaster", content);
+                return Json(new { success = true, message = "Đã gửi OTP" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi gửi mail: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken] // Bước 2: Xác thực OTP và Tạo User
+        public async Task<IActionResult> RegisterStep2(VerifyOtpVM model)
+        {
+            // 1. Lấy dữ liệu từ Cache
+            if (!_cache.TryGetValue("REG_" + model.Email, out TempRegisterData tempData))
+            {
+                return Json(new { success = false, message = "Mã OTP đã hết hạn hoặc email không đúng. Vui lòng đăng ký lại." });
+            }
+
+            // 2. So sánh OTP
+            if (tempData.OtpCode != model.OtpCode)
+            {
+                return Json(new { success = false, message = "Mã OTP không chính xác." });
+            }
+
+            // 3. Tạo User và Lưu xuống Database
+            var newUser = new User
+            {
+                UserId = Guid.NewGuid().ToString(),
+                Email = tempData.Email,
+                FullName = tempData.FullName,
+                PasswordHash = tempData.HashedPassword,
+                Role = "User",
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            };
+
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
+
+            // 4. Xóa Cache (OTP chỉ dùng 1 lần)
+            _cache.Remove("REG_" + model.Email);
+
+            return Json(new { success = true, message = "Đăng ký thành công!" });
+        }
+    }
+    // Thêm class này vào cuối file AuthController hoặc file riêng
+    public class TempRegisterData
+    {
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string HashedPassword { get; set; }
+        public string OtpCode { get; set; }
     }
 }
