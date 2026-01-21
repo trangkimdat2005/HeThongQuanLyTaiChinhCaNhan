@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 
-namespace HeThongQuanLyTaiChinhCaNhan.Service.Interfaces
+namespace HeThongQuanLyTaiChinhCaNhan.Services.Interfaces
 {
     public interface IBaseService
     {
-        List<T> GetList<T>() where T : class;
+        List<T> GetList<T>(Expression<Func<T, bool>> predicate = null) where T : class;
 
         T GetById<T>(params object[] keyValues) where T : class;
 
@@ -16,7 +17,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Service.Interfaces
 
         bool SoftDelete<T>(T entity) where T : class;
 
-        string GenerateNewId<T>(string prefix, int totalLength) where T : class;
+        int GenerateNewId<T>() where T : class;
 
         byte[] ConvertImageToByteArray(string filePath);
 

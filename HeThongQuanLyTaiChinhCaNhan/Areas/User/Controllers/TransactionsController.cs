@@ -1,4 +1,4 @@
-﻿using HeThongQuanLyTaiChinhCaNhan.Service.Interfaces;
+﻿using HeThongQuanLyTaiChinhCaNhan.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Transactions;
 

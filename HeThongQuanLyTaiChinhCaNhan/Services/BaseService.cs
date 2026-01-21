@@ -1,37 +1,56 @@
 ﻿using HeThongQuanLyTaiChinhCaNhan.Models;
-using HeThongQuanLyTaiChinhCaNhan.Service.Interfaces;
+using HeThongQuanLyTaiChinhCaNhan.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
-namespace HeThongQuanLyTaiChinhCaNhan.Service
+namespace HeThongQuanLyTaiChinhCaNhan.Services
 {
     public class BaseService : IBaseService
     {
         protected readonly AppDbContext context;
-        public BaseService()
+
+        public BaseService(AppDbContext context)
         {
-            context = new AppDbContext();
+            this.context = context;
         }
-        public List<T> GetList<T>() where T : class
+
+        public List<T> GetList<T>(Expression<Func<T, bool>> predicate = null) where T : class
         {
             try
             {
-                var data = context.Set<T>().AsNoTracking().ToList();
+                // 1. Khởi tạo Query (Chưa chạy xuống DB)
+                var query = context.Set<T>().AsNoTracking();
 
-                var property = typeof(T).GetProperty("isDelete");
-                if (property != null)
+                // 2. Tự động thêm điều kiện "isDelete == false" nếu bảng có cột này
+                // Mục đích: Chuyển logic check isDelete thành câu SQL WHERE
+                var entityType = typeof(T);
+                var isDeleteProperty = entityType.GetProperty("isDelete") ?? entityType.GetProperty("IsDelete");
+
+                if (isDeleteProperty != null && isDeleteProperty.PropertyType == typeof(bool))
                 {
-                    return data.Where(t =>
-                    {
-                        var value = property.GetValue(t);
-                        return value is bool isDelete && !isDelete;
-                    }).ToList();
+                    // Tạo Expression Tree: e => e.isDelete == false
+                    var parameter = Expression.Parameter(entityType, "e");
+                    var propertyAccess = Expression.Property(parameter, isDeleteProperty);
+                    var falseConstant = Expression.Constant(false);
+                    var condition = Expression.Equal(propertyAccess, falseConstant);
+                    var lambda = Expression.Lambda<Func<T, bool>>(condition, parameter);
+
+                    // Áp dụng vào query
+                    query = query.Where(lambda);
                 }
 
-                return data;
+                // 3. Áp dụng điều kiện lọc từ bên ngoài (Ví dụ: UserId == 1)
+                if (predicate != null)
+                {
+                    query = query.Where(predicate);
+                }
+
+                // 4. Lúc này mới thực thi SQL và lấy dữ liệu về
+                return query.ToList();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred while retrieving entities of type {typeof(T).Name}: {ex.Message}");
+                Console.WriteLine($"Lỗi lấy danh sách {typeof(T).Name}: {ex.Message}");
                 return new List<T>();
             }
         }
@@ -164,42 +183,49 @@ namespace HeThongQuanLyTaiChinhCaNhan.Service
 
         }
 
-        public string GenerateNewId<T>(string prefix, int totalLength) where T : class
+        public int GenerateNewId<T>() where T : class
         {
             try
             {
-                var allEntities = context.Set<T>().AsNoTracking().ToList();
+                // 1. Lấy metadata của Entity để tìm Key Name
+                var entityType = context.Model.FindEntityType(typeof(T));
+                var primaryKey = entityType?.FindPrimaryKey();
 
-                var lastEntity = allEntities
-                    .Select(e =>
-                    {
-                        var idProperty = e.GetType().GetProperty("id") ?? e.GetType().GetProperty("Id");
-                        var id = idProperty?.GetValue(e) as string;
-                        return new { Entity = e, Id = id };
-                    })
-                    .Where(x => x.Id != null && x.Id.StartsWith(prefix))
-                    .OrderByDescending(x => x.Id)
-                    .FirstOrDefault();
+                if (primaryKey == null)
+                    throw new Exception($"Bảng {typeof(T).Name} chưa định nghĩa Primary Key.");
 
-                int newNumericPart = 1;
-                if (lastEntity != null && !string.IsNullOrEmpty(lastEntity.Id))
+                var keyProperty = primaryKey.Properties.FirstOrDefault();
+                string keyName = keyProperty.Name;
+
+                if (keyProperty.ClrType != typeof(int))
                 {
-                    var numericPart = lastEntity.Id.Substring(prefix.Length);
-                    if (int.TryParse(numericPart, out int lastNumericPart))
-                    {
-                        newNumericPart = lastNumericPart + 1;
-                    }
+                    throw new Exception($"Primary Key '{keyName}' của {typeof(T).Name} không phải kiểu int.");
                 }
 
-                string newId = prefix + newNumericPart.ToString().PadLeft(totalLength - prefix.Length, '0');
-                return newId;
+                // 2. Tạo Expression Tree: e => (int?)e.Id
+                // MẸO: Ép kiểu sang int? (Nullable) để Max() không bị lỗi khi bảng trống
+                var parameter = Expression.Parameter(typeof(T), "e");
+                var propertyAccess = Expression.Property(parameter, keyName);
+
+                // Thêm bước convert sang int?
+                var castToNullable = Expression.Convert(propertyAccess, typeof(int?));
+
+                var selectExpression = Expression.Lambda<Func<T, int?>>(castToNullable, parameter);
+
+                // 3. Thực hiện truy vấn SELECT MAX(...)
+                // Lúc này không cần DefaultIfEmpty nữa
+                var maxId = context.Set<T>()
+                                   .Select(selectExpression)
+                                   .Max(); // Nếu bảng trống, nó trả về null thay vì lỗi
+
+                // 4. Xử lý kết quả: Nếu null thì coi là 0, sau đó + 1
+                return (maxId ?? 0) + 1;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred while generating new ID for type {typeof(T).Name}: {ex.Message}");
-                return null;
+                Console.WriteLine($"Lỗi generate ID cho {typeof(T).Name}: {ex.Message}");
+                throw;
             }
-
         }
 
         public byte[] ConvertImageToByteArray(string filePath)
