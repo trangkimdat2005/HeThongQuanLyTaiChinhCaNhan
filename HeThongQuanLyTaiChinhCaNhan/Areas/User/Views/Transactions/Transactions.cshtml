@@ -1,4 +1,12 @@
-
+@model IEnumerable<HeThongQuanLyTaiChinhCaNhan.Models.Transaction>
+@using HeThongQuanLyTaiChinhCaNhan.Models;
+@{
+    ViewData["Title"] = "Giao Dịch";
+    Layout = "~/Areas/User/Views/Shared/_UserLayout.cshtml";
+    
+    var walletList = ViewBag.wallets as List<Wallet>;
+    var categoryList = ViewBag.categories as List<Category>;
+}
 
 <link href="~/user/css/Transactions.css" rel="stylesheet" />
 
@@ -26,23 +34,35 @@
 					<label class="small fw-bold text-muted mb-1">Ví thanh toán</label>
 					<select class="form-select bg-light border-0 fw-bold" id="filterWallet">
 						<option value="">Tất cả ví</option>
+                        @if(walletList != null)
+                        {
+                            foreach(var wallet in walletList)
+                            {
+                                var isSelected = ViewBag.FilterWalletId != null && ViewBag.FilterWalletId == wallet.WalletId;
+                                <option value="@wallet.WalletId" selected="@isSelected">@wallet.WalletName</option>
+                            }
+                        }
 					</select>
 				</div>
 				<div class="col-md-3">
 					<label class="small fw-bold text-muted mb-1">Loại giao dịch</label>
 					<select class="form-select bg-light border-0 fw-bold" id="filterType">
 						<option value="">Tất cả</option>
-						<option value="Income">Khoản Thu (+)</option>
-						<option value="Expense">Khoản Chi (-)</option>
+						@{
+                            var isIncomeSelected = ViewBag.FilterType == "Income";
+                            var isExpenseSelected = ViewBag.FilterType == "Expense";
+                        }
+						<option value="Income" selected="@isIncomeSelected">Khoản Thu</option>
+						<option value="Expense" selected="@isExpenseSelected">Khoản Chi</option>
 					</select>
 				</div>
 				<div class="col-md-3">
 					<label class="small fw-bold text-muted mb-1">Từ ngày</label>
-					<input type="date" class="form-control bg-light border-0 fw-bold" id="filterFromDate">
+					<input type="date" class="form-control bg-light border-0 fw-bold" id="filterFromDate" value="@ViewBag.FilterFromDate">
 				</div>
 				<div class="col-md-3">
 					<label class="small fw-bold text-muted mb-1">Đến ngày</label>
-					<input type="date" class="form-control bg-light border-0 fw-bold" id="filterToDate">
+					<input type="date" class="form-control bg-light border-0 fw-bold" id="filterToDate" value="@ViewBag.FilterToDate">
 				</div>
 
 				<div class="col-12 text-end mt-3">
@@ -68,6 +88,35 @@
 				</tr>
 			</thead>
 			<tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-3">
+                                <span class="fw-bold text-secondary">@item.TransactionDate.ToString("dd/MM")</span><br>
+                                <small class="text-muted">@item.TransactionDate.Year</small>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="cat-icon-circle me-2" style="background-color: @(item.Category?.Color ?? "#ddd")">
+                                        <i class="fas @(item.Category?.Icon ?? "fa-circle")"></i>
+                                    </div>
+                                    <span class="fw-bold text-dark">@(item.Category?.CategoryName ?? "")</span>
+                                </div>
+                            </td>
+                            <td>@item.Description</td>
+                            <td><span class="badge bg-light text-dark border">@(item.Wallet?.WalletName ?? "")</span></td>
+                            <td class="text-end pe-3 fw-bold @(item.Type == "Income" ? "text-success" : "text-danger")" data-type="@item.Type">
+                                @(item.Type == "Income" ? "+" : "-") @item.Amount.ToString("N0") đ
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-light text-primary me-1" onclick="openTransactionModal('edit', @item.TransactionId)"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-light text-danger" onclick="deleteTransaction(@item.TransactionId)"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                    }
+                }
 			</tbody>
 		</table>
 	</div>
@@ -98,20 +147,52 @@
 					<div class="mb-4">
 						<label class="form-label fw-bold small text-muted text-uppercase">Số tiền</label>
 						<div class="input-group input-group-lg">
-							<input type="number" class="form-control fw-bold text-primary" id="transAmount" placeholder="0" required>
+							<input type="text" 
+                                   class="form-control fw-bold text-primary text-end" 
+                                   id="transAmount" 
+                                   placeholder="0" 
+                                   required
+                                   inputmode="numeric"
+                                   autocomplete="off">
 							<span class="input-group-text bg-white border-start-0 fw-bold text-muted">VNĐ</span>
 						</div>
+                        <div class="form-text small text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Nhập số tiền sẽ tự động format (VD: 50.000)
+                        </div>
 					</div>
 
 					<div class="row g-3 mb-3">
 						<div class="col-md-6">
 							<label class="form-label fw-bold small">Danh mục</label>
 							<select class="form-select" id="transCategory" required>
+                                @if(categoryList != null)
+                                {
+                                    <optgroup label="Khoản Chi">
+                                        @foreach(var cat in categoryList.Where(c => c.Type == "Expense"))
+                                        {
+                                            <option value="@cat.CategoryId">@cat.CategoryName</option>
+                                        }
+                                    </optgroup>
+                                    <optgroup label="Khoản Thu">
+                                        @foreach(var cat in categoryList.Where(c => c.Type == "Income"))
+                                        {
+                                            <option value="@cat.CategoryId">@cat.CategoryName</option>
+                                        }
+                                    </optgroup>
+                                }
 							</select>
 						</div>
 						<div class="col-md-6">
 							<label class="form-label fw-bold small">Ví thanh toán</label>
 							<select class="form-select" id="transWallet" required>
+                                @if(walletList != null)
+                                {
+                                    foreach(var wallet in walletList)
+                                    {
+                                        <option value="@wallet.WalletId">@wallet.WalletName</option>
+                                    }
+                                }
 							</select>
 						</div>
 					</div>
@@ -122,7 +203,7 @@
 							<input type="date" class="form-control" id="transDate" required>
 						</div>
 						<div class="col-md-6">
-							<label class="form-label fw-bold small">Ghi chú (Tùy chọn)</label>
+							<label class="form-label fw-bold small">Ghi chú</label>
 							<input type="text" class="form-control" id="transDesc" placeholder="VD: Ăn sáng...">
 						</div>
 					</div>
@@ -141,5 +222,17 @@
 
 @section Scripts
 {
+    <script>
+        // Pass categories to JS for dynamic filtering - Only pass needed fields to avoid circular reference
+        var allCategories = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            (categoryList ?? new List<Category>()).Select(c => new { 
+                CategoryId = c.CategoryId, 
+                CategoryName = c.CategoryName, 
+                Type = c.Type,
+                Icon = c.Icon,
+                Color = c.Color
+            })
+        ));
+    </script>
 	<script src="~/user/js/Transactions.js"></script>
 }
