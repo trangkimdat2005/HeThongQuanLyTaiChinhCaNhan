@@ -165,22 +165,6 @@ $('#categoryForm').on('submit', async function (e) {
     }
 });
 
-// 5. DELETE
-function deleteCategory(id) {
-    Swal.fire({
-        title: 'Xóa danh mục?',
-        text: "Các giao dịch cũ thuộc danh mục này sẽ hiển thị là 'Chưa phân loại'.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Xóa ngay'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire('Đã xóa', '', 'success');
-        }
-    })
-}
-
 
 async function GetAll () {
     try {
@@ -200,4 +184,54 @@ async function GetAll () {
     } catch (err) {
         console.error(err);
     }
+}
+
+function deleteCategory(id) {
+    Swal.fire({
+        title: 'Xóa danh mục?',
+        text: "Các giao dịch cũ thuộc danh mục này sẽ hiển thị là 'Chưa phân loại'.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xóa ngay',
+        cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                // --- THAY ĐỔI Ở ĐÂY ---
+                // 1. URL: nối thêm ID vào sau (dùng dấu huyền ` để nối chuỗi)
+                // 2. Method: DELETE
+                // 3. Body: Bỏ đi
+                const response = await fetch(`/User/Categories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                // ----------------------
+
+                if (response.ok) {
+                    Swal.fire(
+                        'Đã xóa!',
+                        'Danh mục đã được xóa thành công.',
+                        'success'
+                    ).then(() => {
+                        // Reload data
+                        if (typeof refreshData === "function") {
+                            refreshData();
+                        } else {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    const errorMsg = await response.text();
+                    Swal.fire('Lỗi', errorMsg || 'Không thể xóa danh mục này.', 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                Swal.fire('Lỗi', 'Lỗi kết nối đến server.', 'error');
+            }
+        }
+    })
 }

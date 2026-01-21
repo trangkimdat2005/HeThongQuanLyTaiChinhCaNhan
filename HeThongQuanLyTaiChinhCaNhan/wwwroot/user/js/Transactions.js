@@ -1,245 +1,293 @@
-﻿const { get, data } = require("jquery");
-
-// ==================== 1. MOCK DATA ====================
-var mockWallets = [
-    { id: 1, name: "Tiền mặt" },
-    { id: 2, name: "Vietcombank" },
-    { id: 3, name: "Momo" }
-];
-
-// Danh mục chia theo Type
-var mockCategories = [
-    { id: 1, name: "Lương", type: "Income", icon: "fa-money-bill", color: "#1cc88a" },
-    { id: 2, name: "Thưởng", type: "Income", icon: "fa-gift", color: "#20c997" },
-    { id: 3, name: "Ăn uống", type: "Expense", icon: "fa-utensils", color: "#e74a3b" },
-    { id: 4, name: "Di chuyển", type: "Expense", icon: "fa-car", color: "#f6c23e" },
-    { id: 5, name: "Mua sắm", type: "Expense", icon: "fa-shopping-cart", color: "#6f42c1" },
-    { id: 6, name: "Hóa đơn", type: "Expense", icon: "fa-file-invoice", color: "#4e73df" }
-];
-
-var mockTransactions = [
-    { id: 101, date: "2026-01-05", catId: 1, walletId: 2, amount: 15000000, desc: "Nhận lương tháng 1", type: "Income" },
-    { id: 102, date: "2026-01-06", catId: 3, walletId: 1, amount: 50000, desc: "Ăn trưa", type: "Expense" },
-    { id: 103, date: "2026-01-07", catId: 3, walletId: 1, amount: 450000, desc: "Liên hoan", type: "Expense" },
-    { id: 104, date: "2026-01-08", catId: 4, walletId: 1, amount: 100000, desc: "Đổ xăng", type: "Expense" },
-    { id: 105, date: "2026-01-10", catId: 6, walletId: 2, amount: 500000, desc: "Tiền điện", type: "Expense" }
-];
+﻿// ==================== 1. SERVER DATA ====================
 
 var table;
 var modalInstance;
 
 $(document).ready(function () {
-    // 1. Load dữ liệu vào Dropdown (Filter & Modal)
-    loadWalletDropdowns();
-
-    // 2. Init DataTable
+    // 1. Init DataTable
     table = $('#tableTransaction').DataTable({
-        data: mockTransactions,
-        columns: [
-            {
-                data: 'date',
-                render: function (data) {
-                    var date = new Date(data);
-                    return `<span class="fw-bold text-secondary">${date.getDate()}/${date.getMonth() + 1}</span><br><small class="text-muted">${date.getFullYear()}</small>`;
-                }
-            },
-            {
-                data: 'catId',
-                render: function (data, type, row) {
-                    var cat = mockCategories.find(c => c.id === data);
-                    return `
-                        <div class="d-flex align-items-center">
-                            <div class="cat-icon-circle me-2" style="background-color: ${cat.color}">
-                                <i class="fas ${cat.icon}"></i>
-                            </div>
-                            <span class="fw-bold text-dark">${cat.name}</span>
-                        </div>
-                    `;
-                }
-            },
-            { data: 'desc' },
-            {
-                data: 'walletId',
-                render: function (data) {
-                    var w = mockWallets.find(w => w.id === data);
-                    return `<span class="badge bg-light text-dark border">${w.name}</span>`;
-                }
-            },
-            {
-                data: 'amount',
-                className: "text-end pe-3",
-                render: function (data, type, row) {
-                    var color = row.type === 'Income' ? 'text-success' : 'text-danger';
-                    var sign = row.type === 'Income' ? '+' : '-';
-                    return `<span class="fw-bold ${color}">${sign} ${data.toLocaleString()} đ</span>`;
-                }
-            },
-            {
-                data: null,
-                className: "text-end",
-                render: function (data, type, row) {
-                    return `
-                        <button class="btn btn-sm btn-light text-primary me-1" onclick="openTransactionModal('edit', ${row.id})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-light text-danger" onclick="deleteTransaction(${row.id})"><i class="fas fa-trash-alt"></i></button>
-                    `;
-                }
-            }
-        ],
-        order: [[0, 'desc']], // Mới nhất lên đầu
-        language: { search: "Tìm nhanh:", lengthMenu: "Hiện _MENU_", info: "_START_ - _END_ / _TOTAL_", paginate: { first: "«", last: "»", next: "›", previous: "‹" } }
+        language: {
+            search: "Tìm nhanh:",
+            lengthMenu: "Hiển thị _MENU_ dòng",
+            info: "_START_ - _END_ / _TOTAL_",
+            infoEmpty: "Không có dữ liệu",
+            zeroRecords: "Không tìm thấy kết quả nào khớp",
+            paginate: { first: "«", last: "»", next: "›", previous: "‹" }
+        },
+        pageLength: 10,
+        lengthMenu: [5, 10, 20, 50],
+        ordering: true,
+        responsive: true,
+        columnDefs: [
+            { orderable: false, targets: -1 }
+        ]
+    });
+
+    document.getElementById('transDate').valueAsDate = new Date();
+
+    document.getElementById('typeExpense').addEventListener('change', function () {
+        loadCategoriesByType('Expense');
+    });
+    document.getElementById('typeIncome').addEventListener('change', function () {
+        loadCategoriesByType('Income');
+    });
+
+    loadCategoriesByType('Expense');
+
+    $('#transAmount').on('input', function (e) {
+        var val = $(this).val();
+        var numericValue = val.replace(/[^\d]/g, '');
+
+        if (numericValue) {
+            var formatted = parseInt(numericValue).toLocaleString('vi-VN');
+            $(this).val(formatted);
+        } else {
+            $(this).val('');
+        }
+
+        $(this).data('numeric-value', numericValue ? parseInt(numericValue) : 0);
     });
 });
 
-// ==================== FUNCTIONS ====================
 
-// 1. Load Wallets vào Select box
-function loadWalletDropdowns() {
-    var opts = '<option value="">-- Chọn ví --</option>';
-    mockWallets.forEach(w => {
-        opts += `<option value="${w.id}">${w.name}</option>`;
-    });
-    $('#transWallet').html(opts);
-
-    // Load cho Filter
-    var filterOpts = '<option value="">Tất cả ví</option>';
-    mockWallets.forEach(w => {
-        filterOpts += `<option value="${w.id}">${w.name}</option>`;
-    });
-    $('#filterWallet').html(filterOpts);
-}
-
-// 2. Load Categories theo Type (Income/Expense)
 function loadCategoriesByType(type) {
-    var filteredCats = mockCategories.filter(c => c.type === type);
-    var opts = '';
-    filteredCats.forEach(c => {
-        opts += `<option value="${c.id}">${c.name}</option>`;
-    });
-    $('#transCategory').html(opts);
+    if (typeof allCategories === 'undefined' || allCategories.length === 0) {
+        $.get('/User/Transactions/GetCategoriesByType?type=' + type, function (data) {
+            var opts = '';
+            if (data && data.length > 0) {
+                data.forEach(function (c) {
+                    opts += `<option value="${c.categoryId}">${c.categoryName}</option>`;
+                });
+            }
+            $('#transCategory').html(opts);
+        }).fail(function () {
+            console.error('Failed to load categories');
+            $('#transCategory').html('<option value="">Không thể tải danh mục</option>');
+        });
+    } else {
+        var filtered = allCategories.filter(function (c) {
+            return (c.Type || c.type) === type;
+        });
+        var opts = '';
+        if (filtered.length > 0) {
+            filtered.forEach(function (c) {
+                var id = c.CategoryId || c.categoryId;
+                var name = c.CategoryName || c.categoryName;
+                opts += `<option value="${id}">${name}</option>`;
+            });
+        } else {
+            opts = '<option value="">Không có danh mục nào</option>';
+        }
+        $('#transCategory').html(opts);
+    }
 }
 
-// 3. Mở Modal (Thêm/Sửa)
 function openTransactionModal(mode, id = null) {
     var myModalEl = document.getElementById('transactionModal');
     modalInstance = new bootstrap.Modal(myModalEl);
+    $('#transactionForm')[0].reset();
 
     if (mode === 'add') {
         $('#modalTitle').text('Thêm Giao Dịch');
-        $('#transID').val('');
-        $('#transAmount').val('');
-        $('#transDesc').val('');
+        $('#transID').val('0');
         document.getElementById('transDate').valueAsDate = new Date();
-
-        // Mặc định chọn Expense
         $('#typeExpense').prop('checked', true).trigger('change');
-
+        modalInstance.show();
     } else {
-        // Edit Mode
-        var item = mockTransactions.find(x => x.id === id);
-        if (item) {
-            $('#modalTitle').text('Sửa Giao Dịch #' + id);
-            $('#transID').val(item.id);
-            $('#transAmount').val(item.amount);
-            $('#transDesc').val(item.desc);
-            $('#transDate').val(item.date);
-            $('#transWallet').val(item.walletId);
+        $('#modalTitle').text('Sửa Giao Dịch #' + id);
+        $.get('/User/Transactions/GetById/' + id, function (res) {
+            if (res.success) {
+                var item = res.data;
+                $('#transID').val(item.transactionId);
+                $('#transAmount').val(item.amount);
+                $('#transDesc').val(item.description || '');
+                $('#transDate').val(item.transactionDate);
+                $('#transWallet').val(item.walletId);
 
-            // Check radio button
-            if (item.type === 'Income') {
-                $('#typeIncome').prop('checked', true).trigger('change');
+                if (item.type === 'Income') {
+                    $('#typeIncome').prop('checked', true).trigger('change');
+                } else {
+                    $('#typeExpense').prop('checked', true).trigger('change');
+                }
+
+                setTimeout(function () {
+                    $('#transCategory').val(item.categoryId);
+                }, 100);
+
+                modalInstance.show();
             } else {
-                $('#typeExpense').prop('checked', true).trigger('change');
+                Swal.fire('Lỗi', res.message || 'Không tìm thấy dữ liệu', 'error');
             }
-
-            // Sau khi trigger change, category list mới được load lại, rồi mới set value được
-            setTimeout(() => {
-                $('#transCategory').val(item.catId);
-            }, 50);
-        }
+        }).fail(function () {
+            Swal.fire('Lỗi', 'Không thể tải dữ liệu giao dịch', 'error');
+        });
     }
-    modalInstance.show();
 }
 
-// 4. Submit Form
 $('#transactionForm').on('submit', function (e) {
     e.preventDefault();
-    modalInstance.hide();
 
-    // Logic lưu vào DB ở đây (Gọi API)
-    Swal.fire({
-        icon: 'success',
-        title: 'Thành công',
-        text: 'Giao dịch đã được lưu!',
-        timer: 1500,
-        showConfirmButton: false
+    var id = $('#transID').val();
+    var isNew = id == '0' || id == '';
+    var url = isNew ? '/User/Transactions/Create' : '/User/Transactions/Update';
+
+    var amount = $('#transAmount').val();
+    var categoryId = $('#transCategory').val();
+    var walletId = $('#transWallet').val();
+    var transDate = $('#transDate').val();
+    var type = document.querySelector('input[name="transType"]:checked')?.value;
+
+    if (!amount || !categoryId || !walletId || !transDate || !type) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Thiếu thông tin',
+            text: 'Vui lòng điền đầy đủ thông tin bắt buộc!',
+        });
+        return;
+    }
+
+    if (parseFloat(amount) <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Số tiền không hợp lệ',
+            text: 'Số tiền phải lớn hơn 0!',
+        });
+        return;
+    }
+
+    var payload = {
+        TransactionId: isNew ? 0 : parseInt(id),
+        Amount: parseFloat(amount),
+        CategoryId: parseInt(categoryId),
+        WalletId: parseInt(walletId),
+        TransactionDate: transDate,
+        Description: $('#transDesc').val() || '',
+        Type: type
+    };
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        success: function (res) {
+            if (res.success) {
+                modalInstance.hide();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: res.message || 'Đã lưu giao dịch!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Lỗi', res.message || 'Có lỗi xảy ra', 'error');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', xhr.responseText);
+            var errorMsg = 'Không thể kết nối server';
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.message) errorMsg = response.message;
+            } catch (e) {
+                errorMsg += ': ' + error;
+            }
+            Swal.fire('Lỗi', errorMsg, 'error');
+        }
     });
 });
 
-// 5. Xóa Giao dịch
 function deleteTransaction(id) {
     Swal.fire({
-        title: 'Xóa giao dịch này?',
-        text: "Số dư ví sẽ được hoàn lại.",
+        title: 'Xóa giao dịch?',
+        text: "Hành động này không thể hoàn tác!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'Xóa'
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('Đã xóa!', '', 'success');
+            $.post('/User/Transactions/Delete/' + id, function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã xóa!',
+                        text: res.message || 'Giao dịch đã bị xóa.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Lỗi', res.message || 'Không thể xóa giao dịch', 'error');
+                }
+            }).fail(function () {
+                Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+            });
         }
-    })
+    });
 }
 
-// 6. Logic Filter (Demo cơ bản)
 function applyFilter() {
-    var walletId = $('#filterWallet').val();
-    var type = $('#filterType').val();
+    var filterWallet = $('#filterWallet').val();
+    var filterType = $('#filterType').val();
+    var filterFromDate = $('#filterFromDate').val();
+    var filterToDate = $('#filterToDate').val();
 
-    // DataTable Custom Search (Cột 3 là Ví, Cột 4 là Amount có chứa dấu +/- để biết Type)
-    // Đây là demo, thực tế nên gọi API search server-side
+    console.log('Filter values:', { filterWallet, filterType, filterFromDate, filterToDate });
 
-    $.fn.dataTable.ext.search.push(
-        function (settings, data, dataIndex) {
-            var row = mockTransactions[dataIndex];
+    if (filterWallet || filterFromDate || filterToDate) {
+        var params = new URLSearchParams();
+        if (filterWallet) params.append('walletId', filterWallet);
+        if (filterType) params.append('type', filterType);
+        if (filterFromDate) params.append('fromDate', filterFromDate);
+        if (filterToDate) params.append('toDate', filterToDate);
 
-            // Filter Wallet
-            if (walletId && row.walletId != walletId) return false;
+        window.location.href = '/User/Transactions?' + params.toString();
+    } else if (filterType) {
+        // Chỉ filter type thì dùng jQuery để ẩn/hiện rows (đơn giản hơn DataTables filter)
+        console.log('Applying client-side filter for type:', filterType);
 
-            // Filter Type
-            if (type && row.type !== type) return false;
+        // Show all rows first
+        $('#tableTransaction tbody tr').show();
 
-            return true;
-        }
-    );
-    table.draw();
-    $.fn.dataTable.ext.search.pop(); // Reset search function
+        // Then hide rows that don't match
+        $('#tableTransaction tbody tr').each(function () {
+            var rowType = $(this).find('td[data-type]').attr('data-type');
+            console.log('Row type:', rowType, 'Filter:', filterType);
+
+            if (rowType && rowType !== filterType) {
+                $(this).hide();
+            }
+        });
+
+        table.draw(false);
+    } else {
+        console.log('Clearing all filters - showing all rows');
+        $('#tableTransaction tbody tr').show();
+        table.draw(false);
+    }
 }
 
 function resetFilter() {
+    console.log('Resetting filters');
+
     $('#filterWallet').val('');
     $('#filterType').val('');
     $('#filterFromDate').val('');
     $('#filterToDate').val('');
+
+    // Show all rows
+    $('#tableTransaction tbody tr').show();
+
+    // Redraw table
     table.search('').columns().search('').draw();
-    applyFilter(); // Reset custom filter
+
+    // Remove URL parameters and reload
+    window.history.pushState({}, '', '/User/Transactions');
+    location.reload();
 }
-
-
-$(async function () {
-    try {
-        const response = await fetch('/User/Transactions/GetAll');
-
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
-
-        const data = await response.json();
-        console.log(data);
-
-        // xử lý data ở đây
-        // render table, chart, v.v.
-    } catch (err) {
-        console.error(err);
-    }
-});

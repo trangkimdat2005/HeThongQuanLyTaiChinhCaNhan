@@ -182,7 +182,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 }
 
                 // 4. Xử lý Xóa mềm (Soft Delete)
-                category.isDelete = true;
+                category.IsDelete = true;
 
                 // Cập nhật lại vào DB
                 _baseService.Update(category);

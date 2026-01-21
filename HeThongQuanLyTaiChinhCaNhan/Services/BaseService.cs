@@ -2,6 +2,7 @@
 using HeThongQuanLyTaiChinhCaNhan.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace HeThongQuanLyTaiChinhCaNhan.Services
 {
@@ -18,34 +19,50 @@ namespace HeThongQuanLyTaiChinhCaNhan.Services
         {
             try
             {
-                // 1. Khởi tạo Query (Chưa chạy xuống DB)
                 var query = context.Set<T>().AsNoTracking();
 
-                // 2. Tự động thêm điều kiện "isDelete == false" nếu bảng có cột này
-                // Mục đích: Chuyển logic check isDelete thành câu SQL WHERE
+                // 1. Tìm property "IsDelete" bất kể hoa thường (IsDelete, isDelete, isdelete...)
+                // Dùng BindingFlags để tìm không phân biệt hoa thường
                 var entityType = typeof(T);
-                var isDeleteProperty = entityType.GetProperty("isDelete") ?? entityType.GetProperty("IsDelete");
+                var property = entityType.GetProperty("IsDelete", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                            ?? entityType.GetProperty("IsDeleted", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
-                if (isDeleteProperty != null && isDeleteProperty.PropertyType == typeof(bool))
+                // 2. Kiểm tra nếu tìm thấy và đúng kiểu bool hoặc bool?
+                if (property != null && (property.PropertyType == typeof(bool) || property.PropertyType == typeof(bool?)))
                 {
-                    // Tạo Expression Tree: e => e.isDelete == false
+                    // --- Tạo Expression Tree: e => e.IsDelete == false ---
+
                     var parameter = Expression.Parameter(entityType, "e");
-                    var propertyAccess = Expression.Property(parameter, isDeleteProperty);
-                    var falseConstant = Expression.Constant(false);
+                    var propertyAccess = Expression.Property(parameter, property);
+
+                    // Tạo giá trị so sánh (false). 
+                    // Quan trọng: Phải ép kiểu giá trị false cho khớp với kiểu của property (bool hoặc bool?)
+                    var falseConstant = Expression.Constant(false, property.PropertyType);
+
+                    // Tạo phép so sánh: e.IsDelete == false
                     var condition = Expression.Equal(propertyAccess, falseConstant);
+
+                    // Nếu là kiểu bool? (nullable), logic SQL cần chuẩn: (IsDelete == false OR IsDelete == null)
+                    // Tuy nhiên với EF Core, so sánh (bool?) == (bool?)false thường đã tự xử lý. 
+                    // Để chắc chắn lấy cả null (coi như chưa xóa), ta dùng logic: IsDelete != true
+                    if (property.PropertyType == typeof(bool?))
+                    {
+                        var trueConstant = Expression.Constant(true, typeof(bool?));
+                        condition = Expression.NotEqual(propertyAccess, trueConstant);
+                    }
+
                     var lambda = Expression.Lambda<Func<T, bool>>(condition, parameter);
 
-                    // Áp dụng vào query
+                    // Áp dụng bộ lọc
                     query = query.Where(lambda);
                 }
 
-                // 3. Áp dụng điều kiện lọc từ bên ngoài (Ví dụ: UserId == 1)
+                // 3. Áp dụng điều kiện lọc từ bên ngoài (nếu có)
                 if (predicate != null)
                 {
                     query = query.Where(predicate);
                 }
 
-                // 4. Lúc này mới thực thi SQL và lấy dữ liệu về
                 return query.ToList();
             }
             catch (Exception ex)
