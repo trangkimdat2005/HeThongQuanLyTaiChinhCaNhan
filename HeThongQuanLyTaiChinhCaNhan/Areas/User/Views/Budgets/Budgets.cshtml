@@ -1,96 +1,301 @@
+@model IEnumerable<HeThongQuanLyTaiChinhCaNhan.Models.Budget>
+@using HeThongQuanLyTaiChinhCaNhan.Models;
+@{
+    ViewData["Title"] = "Quản Lý Ngân Sách";
+    Layout = "~/Areas/User/Views/Shared/_UserLayout.cshtml";
 
+    var categoryList = ViewBag.categories as List<Category>;
+    var budgetData = ViewBag.budgetData as List<object>;
+}
 
-<link href="~/user//css/Budgets.css" rel="stylesheet" />
-
-
+<link href="~/user/css/Budgets.css" rel="stylesheet" />
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-	<div>
-		<h3 class="fw-bold text-dark mb-0">Quản Lý Ngân Sách</h3>
-		<p class="text-muted small mb-0">Đặt giới hạn chi tiêu để kiểm soát tài chính</p>
-	</div>
-	<button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openBudgetModal('add')">
-		<i class="fas fa-plus me-2"></i> Tạo Ngân Sách
-	</button>
+    <div>
+        <h2 class="fw-bold text-dark mb-0">
+            Quản Lý Ngân Sách</h3></br?
+            <p class="text-muted small mb-0">Đặt giới hạn chi tiêu để kiểm soát tài chính</p>
+    </div>
+    <button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openBudgetModal('add')">
+        <i class="fas fa-plus me-2"></i> Tạo Ngân Sách
+    </button>
 </div>
 
-<div class="row mb-4">
-	<div class="col-12">
-		<div class="alert alert-light border shadow-sm d-flex align-items-center" role="alert">
-			<div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3">
-				<i class="fas fa-exclamation-triangle fa-lg"></i>
-			</div>
-			<div>
-				<h6 class="alert-heading fw-bold mb-1">Cảnh báo chi tiêu!</h6>
-				<p class="mb-0 small text-muted">Bạn đã tiêu quá <b class="text-danger">85%</b> ngân sách cho danh mục <b>Ăn uống</b> tháng này. Hãy cân nhắc!</p>
-			</div>
-		</div>
-	</div>
-</div>
+@if (budgetData != null && budgetData.Any())
+{
+    var highSpendingBudgets = new List<dynamic>();
+    foreach (dynamic item in budgetData)
+    {
+        if ((int)item.Percentage >= 85)
+        {
+            highSpendingBudgets.Add(item);
+        }
+    }
+
+    if (highSpendingBudgets.Any())
+    {
+        var item = highSpendingBudgets.First();
+        var budget = item.Budget as Budget;
+        var spent = (decimal)item.SpentAmount;
+        var remaining = budget.BudgetAmount - spent;
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center" role="alert" style="background-color: #fff3cd;">
+                    <div class="bg-warning bg-opacity-25 text-warning rounded-circle p-3 me-3" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-exclamation-triangle fa-lg"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="alert-heading fw-bold mb-1 text-dark">⚠️ Cảnh báo chi tiêu!</h6>
+                        <p class="mb-0 text-muted">
+                            Bạn đã chi <b class="text-danger">@spent.ToString("N0")đ (@item.Percentage%)</b> cho
+                            <b class="text-dark">@(budget.Category?.CategoryName ?? "N/A")</b>.
+                            Còn lại: <b class="text-success">@remaining.ToString("N0")đ</b>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
 
 <div class="row g-4" id="budgetList">
+    @if (budgetData != null && budgetData.Any())
+    {
+        foreach (dynamic item in budgetData)
+        {
+            var budget = item.Budget as Budget;
+            var spent = (decimal)item.SpentAmount;
+            var percentage = (int)item.Percentage;
+            var displayPercent = percentage > 100 ? 100 : percentage;
+            var remaining = budget.BudgetAmount - spent;
+
+            // Status colors
+            var colorClass = "bg-success";
+            var statusText = "An toàn";
+            var textColor = "text-success";
+
+            if (percentage >= 50 && percentage < 80)
+            {
+                colorClass = "bg-warning";
+                statusText = "Cần chú ý";
+                textColor = "text-warning";
+            }
+            else if (percentage >= 80 && percentage <= 100)
+            {
+                colorClass = "bg-danger";
+                statusText = "Sắp hết";
+                textColor = "text-danger";
+            }
+            else if (percentage > 100)
+            {
+                colorClass = "bg-danger";
+                statusText = $"Vượt {Math.Abs(remaining):N0}đ";
+                textColor = "text-danger fw-bold";
+            }
+
+            <div class="col-xl-4 col-md-6">
+                <div class="card budget-card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <div class="cat-icon-lg me-3 shadow-sm" style="background-color: @(budget.Category?.Color ?? "#6c757d")">
+                                    <i class="fas @(budget.Category?.Icon ?? "fa-wallet")"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-dark mb-1">@(budget.Category?.CategoryName ?? "N/A")</h6>
+                                    <small class="text-muted d-block">
+                                        <i class="far fa-calendar-alt me-1"></i>
+                                        @budget.StartDate.ToString("dd/MM") - @budget.EndDate.ToString("dd/MM")
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown" aria-label="Menu">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                    <li>
+                                        <a class="dropdown-item" href="#" onclick="openBudgetModal('edit', @budget.BudgetId); return false;">
+                                            <i class="fas fa-edit me-2 text-primary"></i>Sửa hạn mức
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="#" onclick="deleteBudget(@budget.BudgetId); return false;">
+                                            <i class="fas fa-trash-alt me-2"></i>Xóa ngân sách
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-end mb-2">
+                                <div>
+                                    <small class="text-muted d-block mb-1">Đã chi</small>
+                                    <span class="fw-bold text-dark" style="font-size: 1.1rem;">@spent.ToString("N0")đ</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="@textColor fw-bold" style="font-size: 1.4rem;">@percentage%</span>
+                                </div>
+                            </div>
+
+                            <div class="progress" style="height: 18px;">
+                                <div class="progress-bar @colorClass progress-bar-striped progress-bar-animated"
+                                     role="progressbar"
+                                     style="width: @displayPercent%"
+                                     aria-valuenow="@displayPercent"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                    @if (displayPercent >= 20)
+                                    {
+                                        <span class="fw-semibold">@percentage%</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <div>
+                                <small class="text-muted d-block mb-1">Hạn mức</small>
+                                <span class="fw-bold text-dark" style="font-size: 1.2rem;">@budget.BudgetAmount.ToString("N0")đ</span>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block mb-1">Trạng thái</small>
+                                <span class="badge @(colorClass.Replace("progress-bar-", "")) fw-bold px-3 py-2" style="font-size: 0.85rem;">
+                                    @statusText
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-chart-pie fa-4x text-muted opacity-50"></i>
+                    </div>
+                    <h5 class="text-dark fw-bold mb-2">Chưa có ngân sách nào</h5>
+                    <p class="text-muted mb-4">Tạo ngân sách đầu tiên để kiểm soát chi tiêu hiệu quả</p>
+                    <button class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" onclick="openBudgetModal('add')">
+                        <i class="fas fa-plus-circle me-2"></i> Tạo Ngân Sách Đầu Tiên
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
-<div class="modal fade" id="budgetModal" tabindex="-1">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content border-0 shadow">
-			<div class="modal-header border-bottom-0 pb-0">
-				<h5 class="modal-title fw-bold text-primary" id="modalTitle">Thiết Lập Ngân Sách</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-			</div>
-			<div class="modal-body pt-3">
-				<form id="budgetForm">
-					<input type="hidden" id="budgetID">
+<div class="modal fade" id="budgetModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-primary" id="modalTitle">
+                    <i class="fas fa-chart-line me-2"></i>Thiết Lập Ngân Sách
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <form id="budgetForm">
+                    <input type="hidden" id="budgetID">
 
-					<div class="mb-3">
-						<label class="form-label fw-bold small">Danh Mục Áp Dụng <span class="text-danger">*</span></label>
-						<select class="form-select" id="budgetCategory" required>
-						</select>
-						<div class="form-text">Chỉ áp dụng cho các khoản Chi tiêu (Expense).</div>
-					</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-tag me-1"></i>
+                            Danh Mục Áp Dụng <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select form-select-lg" id="budgetCategory" required>
+                            <option value="">-- Chọn danh mục --</option>
+                            @if (categoryList != null && categoryList.Any())
+                            {
+                                foreach (var cat in categoryList)
+                                {
+                                    <option value="@cat.CategoryId" data-icon="@cat.Icon" data-color="@cat.Color">
+                                        @cat.CategoryName
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" disabled>Chưa có danh mục chi tiêu</option>
+                            }
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Chỉ áp dụng cho các khoản Chi tiêu (Expense).
+                        </div>
+                    </div>
 
-					<div class="mb-3">
-						<label class="form-label fw-bold small">Hạn Mức Chi Tiêu (BudgetAmount) <span class="text-danger">*</span></label>
-						<div class="input-group">
-							<input type="number" class="form-control fw-bold text-primary" id="budgetAmount" placeholder="VD: 3000000" required>
-							<span class="input-group-text bg-light text-muted fw-bold">VNĐ</span>
-						</div>
-					</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-money-bill-wave me-1"></i>
+                            Hạn Mức Chi Tiêu <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <input type="text"
+                                   class="form-control fw-bold text-primary text-end"
+                                   id="budgetAmount"
+                                   placeholder="0"
+                                   required
+                                   inputmode="numeric"
+                                   autocomplete="off">
+                            <span class="input-group-text bg-light text-muted fw-bold">VNĐ</span>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Số tiền sẽ tự động format (VD: 3.000.000)
+                        </div>
+                    </div>
 
-					<label class="form-label fw-bold small">Thời Gian Áp Dụng</label>
-					<div class="row g-2 mb-3">
-						<div class="col-6">
-							<div class="form-floating">
-								<input type="date" class="form-control" id="startDate" required>
-								<label for="startDate">Từ ngày</label>
-							</div>
-						</div>
-						<div class="col-6">
-							<div class="form-floating">
-								<input type="date" class="form-control" id="endDate" required>
-								<label for="endDate">Đến ngày</label>
-							</div>
-						</div>
-					</div>
+                    <label class="form-label fw-bold small">
+                        <i class="far fa-calendar-check me-1"></i>
+                        Thời Gian Áp Dụng
+                    </label>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" id="startDate" required>
+                                <label for="startDate"><i class="far fa-calendar-alt me-1"></i>Từ ngày</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input type="date" class="form-control" id="endDate" required>
+                                <label for="endDate"><i class="far fa-calendar-alt me-1"></i>Đến ngày</label>
+                            </div>
+                        </div>
+                    </div>
 
-					<div class="d-flex gap-2 mb-3">
-						<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="setQuickDate('thisMonth')">Tháng này</button>
-						<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="setQuickDate('nextMonth')">Tháng sau</button>
-					</div>
+                    <div class="d-flex gap-2 mb-4">
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="setQuickDate('thisMonth')">
+                            <i class="far fa-calendar me-1"></i>Tháng này
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="setQuickDate('nextMonth')">
+                            <i class="far fa-calendar-plus me-1"></i>Tháng sau
+                        </button>
+                    </div>
 
-					<div class="text-end mt-4 pt-2 border-top">
-						<button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Hủy</button>
-						<button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
-							<i class="fas fa-save me-2"></i>Lưu Ngân Sách
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
+                    <div class="text-end mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-light me-2 px-4" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Lưu Ngân Sách
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts
 {
-	<script src="~/user/js/Budgets.js"></script>
+    <script src="~/user/js/Budgets.js"></script>
 }

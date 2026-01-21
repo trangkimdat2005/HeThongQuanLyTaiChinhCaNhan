@@ -1,169 +1,70 @@
-﻿// 1. MOCK DATA (Giả lập dữ liệu)
-// Danh mục (Chỉ lấy Expense)
-var mockCategories = [
-    { id: 3, name: "Ăn uống", icon: "fa-utensils", color: "#dc3545" },
-    { id: 4, name: "Di chuyển", icon: "fa-car", color: "#fd7e14" },
-    { id: 5, name: "Mua sắm", icon: "fa-shopping-cart", color: "#6f42c1" },
-    { id: 6, name: "Hóa đơn", icon: "fa-file-invoice", color: "#17a2b8" }
-];
-
-// Ngân sách hiện tại
-// Lưu ý: 'spent' là số liệu giả lập (Thực tế phải query SUM từ bảng Transactions)
-var mockBudgets = [
-    {
-        id: 1,
-        catID: 3,
-        amount: 3000000,
-        spent: 2600000, // Đã tiêu 2.6tr / 3tr -> Sắp vỡ
-        startDate: "2026-01-01",
-        endDate: "2026-01-31"
-    },
-    {
-        id: 2,
-        catID: 4,
-        amount: 1500000,
-        spent: 400000, // Đã tiêu 400k / 1.5tr -> An toàn
-        startDate: "2026-01-01",
-        endDate: "2026-01-31"
-    },
-    {
-        id: 3,
-        catID: 6,
-        amount: 1000000,
-        spent: 1200000, // Đã tiêu 1.2tr / 1tr -> Vỡ kế hoạch (Over budget)
-        startDate: "2026-01-01",
-        endDate: "2026-01-31"
-    }
-];
+﻿// ==================== BUDGETS MANAGEMENT ====================
 
 var modalInstance;
 
 $(document).ready(function () {
-    renderCategoryOptions();
-    renderBudgets();
-});
+    console.log('Budgets page loaded');
+    
+    // Format amount input with thousand separator
+    $('#budgetAmount').on('input', function (e) {
+        var val = $(this).val();
+        var numericValue = val.replace(/[^\d]/g, '');
 
-// --- RENDER GIAO DIỆN ---
-
-function renderBudgets() {
-    var html = '';
-
-    mockBudgets.forEach(b => {
-        // Lấy thông tin danh mục
-        var cat = mockCategories.find(c => c.id === b.catID);
-
-        // Tính toán phần trăm
-        var percent = Math.round((b.spent / b.amount) * 100);
-        var displayPercent = percent > 100 ? 100 : percent; // Bar không dài quá 100%
-
-        // Xác định màu sắc trạng thái
-        var colorClass = 'bg-success';
-        var statusText = 'An toàn';
-        var textColor = 'text-success';
-
-        if (percent >= 50 && percent < 80) {
-            colorClass = 'bg-warning';
-            statusText = 'Cần chú ý';
-            textColor = 'text-warning';
-        } else if (percent >= 80 && percent <= 100) {
-            colorClass = 'bg-danger';
-            statusText = 'Sắp hết';
-            textColor = 'text-danger';
-        } else if (percent > 100) {
-            colorClass = 'bg-danger'; // Vẫn đỏ nhưng đậm hơn logic dưới
-            statusText = `Vượt quá ${Math.abs(b.amount - b.spent).toLocaleString()}đ`;
-            textColor = 'text-danger fw-bold';
+        if (numericValue) {
+            var formatted = parseInt(numericValue).toLocaleString('vi-VN');
+            $(this).val(formatted);
+        } else {
+            $(this).val('');
         }
 
-        // Format ngày
-        var sDate = new Date(b.startDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-        var eDate = new Date(b.endDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-
-        html += `
-        <div class="col-xl-4 col-md-6">
-            <div class="card budget-card shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="cat-icon-lg me-3 shadow-sm" style="background-color: ${cat.color}">
-                                <i class="fas ${cat.icon}"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold text-dark mb-0">${cat.name}</h6>
-                                <small class="text-muted">${sDate} - ${eDate}</small>
-                            </div>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                <li><a class="dropdown-item" href="#" onclick="openBudgetModal('edit', ${b.id})">Sửa hạn mức</a></li>
-                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteBudget(${b.id})">Xóa ngân sách</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="mb-2 d-flex justify-content-between fw-bold small">
-                        <span class="text-muted">Đã dùng: ${b.spent.toLocaleString()}đ</span>
-                        <span class="${textColor}">${percent}%</span>
-                    </div>
-                    <div class="progress mb-3">
-                        <div class="progress-bar ${colorClass} progress-bar-striped" role="progressbar" style="width: ${displayPercent}%"></div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                        <div class="small">
-                            <span class="text-muted">Hạn mức:</span>
-                            <span class="fw-bold text-dark">${b.amount.toLocaleString()}đ</span>
-                        </div>
-                        <div class="small fw-bold ${textColor}">
-                            ${statusText}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
+        // Store raw numeric value for submission
+        $(this).data('numeric-value', numericValue ? parseInt(numericValue) : 0);
     });
+});
 
-    $('#budgetList').html(html);
-}
-
-// Render Dropdown chọn danh mục trong Modal
-function renderCategoryOptions() {
-    var opts = '<option value="">-- Chọn danh mục --</option>';
-    mockCategories.forEach(c => {
-        opts += `<option value="${c.id}">${c.name}</option>`;
-    });
-    $('#budgetCategory').html(opts);
-}
-
-
-// --- XỬ LÝ MODAL ---
+// --- MODAL HANDLERS ---
 
 function openBudgetModal(mode, id = null) {
     var myModalEl = document.getElementById('budgetModal');
     modalInstance = new bootstrap.Modal(myModalEl);
 
     if (mode === 'add') {
-        $('#modalTitle').text('Tạo Ngân Sách Mới');
+        $('#modalTitle').html('<i class="fas fa-chart-line me-2"></i>Tạo Ngân Sách Mới');
         $('#budgetForm')[0].reset();
-        $('#budgetID').val('');
-        setQuickDate('thisMonth'); // Mặc định chọn tháng này
+        $('#budgetID').val('0');
+        $('#budgetAmount').removeData('numeric-value');
+        setQuickDate('thisMonth'); // Default to current month
+        modalInstance.show();
     } else {
-        var item = mockBudgets.find(b => b.id === id);
-        if (item) {
-            $('#modalTitle').text('Cập Nhật Ngân Sách');
-            $('#budgetID').val(item.id);
-            $('#budgetCategory').val(item.catID);
-            $('#budgetAmount').val(item.amount);
-            $('#startDate').val(item.startDate);
-            $('#endDate').val(item.endDate);
-        }
+        // Edit mode - Load data from server
+        $('#modalTitle').html('<i class="fas fa-edit me-2"></i>Cập Nhật Ngân Sách #' + id);
+
+        $.get('/User/Budgets/GetById/' + id, function (res) {
+            if (res.success) {
+                var item = res.data;
+                $('#budgetID').val(item.budgetId);
+                $('#budgetCategory').val(item.categoryId);
+                
+                // Format and set budget amount
+                var formattedAmount = parseInt(item.budgetAmount).toLocaleString('vi-VN');
+                $('#budgetAmount').val(formattedAmount);
+                $('#budgetAmount').data('numeric-value', item.budgetAmount);
+                
+                $('#startDate').val(item.startDate);
+                $('#endDate').val(item.endDate);
+
+                modalInstance.show();
+            } else {
+                Swal.fire('Lỗi', res.message || 'Không tìm thấy dữ liệu', 'error');
+            }
+        }).fail(function () {
+            Swal.fire('Lỗi', 'Không thể tải dữ liệu ngân sách', 'error');
+        });
     }
-    modalInstance.show();
 }
 
-// Helper chọn ngày nhanh
+// --- QUICK DATE HELPERS ---
+
 function setQuickDate(type) {
     var date = new Date();
     var firstDay, lastDay;
@@ -181,23 +82,129 @@ function setQuickDate(type) {
     $('#endDate').val(lastDay.toISOString().split('T')[0]);
 }
 
-// Submit Form
+// --- FORM SUBMIT ---
+
 $('#budgetForm').on('submit', function (e) {
     e.preventDefault();
-    modalInstance.hide();
+
+    var id = $('#budgetID').val();
+    var isNew = id == '0' || id == '';
+    var url = isNew ? '/User/Budgets/Create' : '/User/Budgets/Update';
+
+    var categoryId = $('#budgetCategory').val();
+    
+    // Get the numeric value stored during input formatting
+    var budgetAmount = $('#budgetAmount').data('numeric-value');
+    if (budgetAmount === undefined || budgetAmount === null) {
+        budgetAmount = 0;
+    }
+    
+    var startDate = $('#startDate').val();
+    var endDate = $('#endDate').val();
+
+    // Validation
+    if (!categoryId || !budgetAmount || !startDate || !endDate) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Thiếu thông tin',
+            text: 'Vui lòng điền đầy đủ thông tin bắt buộc!',
+        });
+        return;
+    }
+
+    if (budgetAmount <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Số tiền không hợp lệ',
+            text: 'Hạn mức phải lớn hơn 0!',
+        });
+        return;
+    }
+
+    if (budgetAmount < 1000) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Số tiền quá nhỏ',
+            text: 'Hạn mức phải tối thiểu 1,000đ!',
+        });
+        return;
+    }
+
+    // Check date range
+    if (new Date(endDate) < new Date(startDate)) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Ngày không hợp lệ',
+            text: 'Ngày kết thúc phải sau ngày bắt đầu!',
+        });
+        return;
+    }
+
+    var payload = {
+        BudgetId: isNew ? 0 : parseInt(id),
+        CategoryId: parseInt(categoryId),
+        BudgetAmount: parseFloat(budgetAmount),
+        StartDate: startDate,
+        EndDate: endDate
+    };
 
     Swal.fire({
-        icon: 'success',
-        title: 'Thành công',
-        text: 'Ngân sách đã được thiết lập!',
-        timer: 1500,
-        showConfirmButton: false
-    }).then(() => {
-        location.reload();
+        title: 'Đang xử lý...',
+        text: 'Vui lòng đợi',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        success: function (res) {
+            if (res.success) {
+                modalInstance.hide();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: res.message || 'Đã lưu ngân sách!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: res.message || 'Có lỗi xảy ra',
+                    confirmButtonText: 'Đóng'
+                });
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', xhr.responseText);
+            var errorMsg = 'Không thể kết nối server';
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.message) errorMsg = response.message;
+            } catch (e) {
+                errorMsg += ': ' + error;
+            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: errorMsg,
+                confirmButtonText: 'Đóng'
+            });
+        }
     });
 });
 
-// Xóa
+// --- DELETE BUDGET ---
+
 function deleteBudget(id) {
     Swal.fire({
         title: 'Xóa ngân sách này?',
@@ -205,10 +212,48 @@ function deleteBudget(id) {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'Xóa'
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('Đã xóa!', '', 'success');
+            Swal.fire({
+                title: 'Đang xóa...',
+                text: 'Vui lòng đợi',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.post('/User/Budgets/Delete/' + id, function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã xóa!',
+                        text: res.message || 'Ngân sách đã bị xóa.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: res.message || 'Không thể xóa ngân sách',
+                        confirmButtonText: 'Đóng'
+                    });
+                }
+            }).fail(function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không thể kết nối server',
+                    confirmButtonText: 'Đóng'
+                });
+            });
         }
-    })
+    });
 }
