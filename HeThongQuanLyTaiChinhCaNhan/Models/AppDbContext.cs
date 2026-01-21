@@ -31,7 +31,7 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Wallet> Wallets { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder){}
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +45,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
                 .HasColumnName("UserID");
@@ -71,6 +74,9 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Icon).HasMaxLength(50);
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.Type).HasMaxLength(20);
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
@@ -94,6 +100,9 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(18, 2)");
             entity.Property(e => e.GoalName).HasMaxLength(100);
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValue("Đang thực hiện");
@@ -121,6 +130,9 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.GoalId).HasColumnName("GoalID");
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.Note).HasMaxLength(255);
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
@@ -151,6 +163,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.QuestionType).HasMaxLength(50);
             entity.Property(e => e.RepliedAt).HasColumnType("datetime");
             entity.Property(e => e.RepliedBy).HasMaxLength(450);
@@ -183,6 +198,9 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.Type).HasMaxLength(20);
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -223,6 +241,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(256);
             entity.Property(e => e.FullName).HasMaxLength(150);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.LastLogin).HasColumnType("datetime");
             entity.Property(e => e.Role)
                 .HasMaxLength(20)
@@ -242,6 +263,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.InitialBalance)
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(15, 2)");
+            entity.Property(e => e.IsDelete)
+                .HasDefaultValue(false)
+                .HasColumnName("isDelete");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
