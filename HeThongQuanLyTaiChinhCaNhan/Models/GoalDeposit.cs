@@ -19,6 +19,8 @@ public partial class GoalDeposit
 
     public string? Note { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual Goal Goal { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;

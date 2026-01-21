@@ -23,6 +23,8 @@ public partial class Wallet
 
     public DateTime? UpdatedAt { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual ICollection<GoalDeposit> GoalDeposits { get; set; } = new List<GoalDeposit>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
