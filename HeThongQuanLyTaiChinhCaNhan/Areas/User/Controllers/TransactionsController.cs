@@ -126,7 +126,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Ngày giao dịch không hợp lệ." });
                 }
 
-                // ✅ Kiểm tra Category thuộc về user và CHƯA BỊ XÓA
+                // Kiểm tra Category thuộc về user và CHƯA BỊ XÓA
                 var category = _context.Categories
                     .AsNoTracking()
                     .FirstOrDefault(c => c.CategoryId == dto.CategoryId 
@@ -237,13 +237,25 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 using var dbTransaction = _context.Database.BeginTransaction();
                 try
                 {
-                    //  KHÔNG hoàn trả số dư ví - Giao dịch đã thực hiện không thể hoàn tác
-                    // Chỉ xóa bản ghi transaction
+                    // HOÀN TRẢ số dư ví khi xóa
+                    var wallet = transaction.Wallet;
+                    if (transaction.Type == "Income")
+                    {
+                        // Trừ tiền khỏi ví
+                        wallet.Balance = (wallet.Balance ?? 0) - transaction.Amount;
+                    }
+                    else if (transaction.Type == "Expense")
+                    {
+                        // Hoàn trả tiền vào ví
+                        wallet.Balance = (wallet.Balance ?? 0) + transaction.Amount;
+                    }
+                    wallet.UpdatedAt = DateTime.Now;
+
                     _context.Transactions.Remove(transaction);
                     _context.SaveChanges();
                     dbTransaction.Commit();
 
-                    return Json(new { success = true, message = "Đã xóa giao dịch." });
+                    return Json(new { success = true, message = "Đã xóa giao dịch và cập nhật số dư ví." });
                 }
                 catch (Exception ex)
                 {
@@ -343,33 +355,44 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Ví không tồn tại." });
                 }
 
-                // Parse ngày
                 if (!DateOnly.TryParse(dto.TransactionDate, out DateOnly parsedDate))
                 {
                     return Json(new { success = false, message = "Ngày giao dịch không hợp lệ." });
                 }
 
-                // ⚠️ LOGIC MỚI: CHỈ KIỂM TRA SỐ DƯ CHO GIAO DỊCH MỚI, KHÔNG HOÀN TRẢ
-                // Nếu là khoản chi, kiểm tra số dư ví hiện tại có đủ không
-                if (dto.Type == "Expense")
-                {
-                    var currentBalance = newWallet.Balance ?? 0;
-                    if (currentBalance < dto.Amount)
-                    {
-                        return Json(new
-                        {
-                            success = false,
-                            message = $"Số dư ví không đủ! Số dư hiện tại: {currentBalance:N0}đ"
-                        });
-                    }
-                }
-
                 using var dbTransaction = _context.Database.BeginTransaction();
                 try
                 {
-                    // ❌ KHÔNG hoàn trả số dư cũ - Giao dịch đã thực hiện không thể hoàn tác
-                    
-                    // Cập nhật thông tin transaction
+                    var oldWallet = existing.Wallet;
+
+                    //  HOÀN TRẢ số dư cũ
+                    if (existing.Type == "Income")
+                    {
+                        oldWallet.Balance = (oldWallet.Balance ?? 0) - existing.Amount;
+                    }
+                    else if (existing.Type == "Expense")
+                    {
+                        oldWallet.Balance = (oldWallet.Balance ?? 0) + existing.Amount;
+                    }
+
+                    // KIỂM TRA SỐ DƯ cho giao dịch mới 
+                    if (dto.Type == "Expense")
+                    {
+                        var availableBalance = oldWallet.WalletId == newWallet.WalletId 
+                            ? oldWallet.Balance ?? 0 
+                            : newWallet.Balance ?? 0;
+
+                        if (availableBalance < dto.Amount)
+                        {
+                            return Json(new
+                            {
+                                success = false,
+                                message = $"Số dư ví không đủ! Số dư khả dụng: {availableBalance:N0}đ"
+                            });
+                        }
+                    }
+
+                    //  CẬP NHẬT thông tin transaction
                     existing.Amount = dto.Amount;
                     existing.CategoryId = dto.CategoryId;
                     existing.WalletId = dto.WalletId;
@@ -378,7 +401,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     existing.Type = dto.Type;
                     existing.UpdatedAt = DateTime.Now;
 
-                    // ✅ CHỈ TRỪ/CỘNG SỐ DƯ MỚI (không hoàn trả cũ)
+                    // ÁP DỤNG số dư mới
                     if (dto.Type == "Income")
                     {
                         newWallet.Balance = (newWallet.Balance ?? 0) + dto.Amount;
@@ -389,12 +412,18 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     }
                     newWallet.UpdatedAt = DateTime.Now;
 
+                    // Nếu đổi ví thì cập nhật cả 2 ví
+                    if (oldWallet.WalletId != newWallet.WalletId)
+                    {
+                        oldWallet.UpdatedAt = DateTime.Now;
+                    }
+
                     _context.SaveChanges();
                     dbTransaction.Commit();
 
                     return Json(new { 
                         success = true, 
-                        message = "Cập nhật giao dịch thành công! Số dư ví đã được điều chỉnh theo giao dịch mới." 
+                        message = "Cập nhật giao dịch thành công!" 
                     });
                 }
                 catch (Exception ex)
@@ -460,35 +489,9 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 balance = wallet.Balance ?? 0
             });
         }
-
-        /// <summary>
-        /// API để reset IDENTITY của bảng Transactions (Admin only)
-        /// </summary>
-        [HttpGet("ResetIdentity")]
-        [Authorize(Roles = "Admin")] // Chỉ Admin mới được gọi
-        public IActionResult ResetIdentity()
-        {
-            try
-            {
-                _context.ResetTransactionIdentity();
-                return Json(new
-                {
-                    success = true,
-                    message = "IDENTITY đã được reset thành công!"
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = $"Lỗi: {ex.Message}"
-                });
-            }
-        }
+        
     }
 
-    // DTO class để binding data từ JSON request
     public class TransactionDto
     {
         public int TransactionId { get; set; }
