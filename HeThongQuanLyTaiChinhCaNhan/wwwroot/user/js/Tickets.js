@@ -1,28 +1,57 @@
 ﻿// 1. MOCK DATA (Chỉ vé của User hiện tại)
-var mockMyTickets = [
-    {
-        id: 101,
-        type: "Technical Issue",
-        respond: "Email",
-        desc: "Tôi không thể thay đổi icon của ví tiền, hệ thống báo lỗi 500 khi bấm nút lưu.",
-        status: "Open",
-        date: "2026-01-10 09:30"
-    },
-    {
-        id: 103,
-        type: "Payment",
-        respond: "Email",
-        desc: "Tôi đã nạp VIP nhưng chưa thấy kích hoạt. Mã giao dịch #MOMO123456.",
-        status: "Resolved",
-        date: "2026-01-08 10:00"
-    }
-];
+// MOCK DATA (sẽ được đổ từ API)
+var mockMyTickets = [];
 
 var createModal, viewModal;
 
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+
+    return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function loadTicketsFromApi() {
+    $.ajax({
+        url: '/User/Tickets/GetAll',
+        type: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        success: function (data) {
+            // Map dữ liệu từ TicketDto -> mockMyTickets
+            mockMyTickets = data.map(item => ({
+                id: item.ticketId,
+                type: item.questionType,
+                respond: item.respondType,
+                desc: item.description,
+                status: item.status,
+                date: formatDate(item.createdAt)
+            }));
+
+            renderTickets();
+            calculateStats();
+        },
+        error: function (err) {
+            if (err.status === 401) {
+                alert("Bạn chưa đăng nhập hoặc token hết hạn");
+            } else {
+                console.error("Lỗi load ticket:", err);
+            }
+        }
+    });
+}
+
+
 $(document).ready(function () {
-    renderTickets();
-    calculateStats();
+    loadTicketsFromApi();
+    //renderTickets();
+    //calculateStats();
 });
 
 // 2. RENDER TABLE
@@ -84,39 +113,124 @@ function openCreateTicketModal() {
 }
 
 // 5. XỬ LÝ GỬI FORM
+//$('#createTicketForm').on('submit', function (e) {
+//    e.preventDefault();
+//    createModal.hide();  // Ẩn modal tạo ticket
+
+//    // Lấy dữ liệu từ form
+//    var type = $('#ticketType').val();
+//    var desc = $('#ticketDesc').val();
+//    var respond = $('input[name="respondType"]:checked').val();
+//    var now = new Date();
+//    var dateStr = `${now.getFullYear()}-0${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
+
+//    // Dữ liệu cần gửi lên server
+//    var ticketData = {
+//        ticketId: Math.floor(Math.random() * 1000) + 1000,  // Có thể bỏ hoặc dùng API backend tự tạo
+//        questionType: type,
+//        respondType: respond,
+//        description: desc,
+//        status: "Open",  // Tình trạng ban đầu
+//        createdAt: dateStr,
+//        isDelete: false  // Mặc định là không xóa
+//    };
+
+//    // Gửi yêu cầu POST tới API backend
+//    $.ajax({
+//        url: '/User/Tickets/Create',  // Địa chỉ API để lưu ticket
+//        type: 'POST',
+//        contentType: 'application/json',
+//        headers: {
+//            'Authorization': 'Bearer ' + localStorage.getItem('token')  // Thêm token nếu có
+//        },
+//        data: JSON.stringify(ticketData),  // Chuyển đổi dữ liệu thành JSON
+//        success: function (data) {
+//            // Thành công khi tạo ticket
+//            Swal.fire({
+//                icon: 'success',
+//                title: 'Đã gửi yêu cầu',
+//                text: 'Mã hồ sơ của bạn là #' + ticketData.ticketId,
+//                confirmButtonText: 'OK'
+//            }).then(() => {
+//                loadTicketsFromApi();  // Tải lại danh sách ticket mới
+//                calculateStats();  // Cập nhật thống kê
+//            });
+//        },
+//        error: function (err) {
+//            // Xử lý lỗi nếu có
+//            console.error("Lỗi khi gửi ticket:", err);
+//            Swal.fire({
+//                icon: 'error',
+//                title: 'Lỗi gửi yêu cầu',
+//                text: 'Có lỗi khi tạo ticket, vui lòng thử lại.',
+//                confirmButtonText: 'OK'
+//            });
+//        }
+//    });
+//});
+
 $('#createTicketForm').on('submit', function (e) {
     e.preventDefault();
     createModal.hide();
 
-    // Lấy dữ liệu form
     var type = $('#ticketType').val();
     var desc = $('#ticketDesc').val();
     var respond = $('input[name="respondType"]:checked').val();
-    var now = new Date();
-    var dateStr = `${now.getFullYear()}-0${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
 
-    // Giả lập thêm vào DB
-    var newTicket = {
-        id: Math.floor(Math.random() * 1000) + 1000,
-        type: type,
-        respond: respond,
-        desc: desc,
-        status: "Open",
-        date: dateStr
+    // Validate dữ liệu
+    if (!type || !desc || !respond) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Vui lòng điền đầy đủ thông tin trước khi gửi.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    // Chỉ gửi những dữ liệu người dùng nhập, các thông số hệ thống (ngày, status...) để Server lo
+    var ticketData = {
+        questionType: type,
+        respondType: respond,
+        description: desc
+        // Bỏ createdAt, status, isDelete, userId ở đây
     };
 
-    mockMyTickets.unshift(newTicket); // Thêm lên đầu danh sách
+    $.ajax({
+        url: '/User/Tickets/Create',
+        type: 'POST',
+        contentType: 'application/json',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        data: JSON.stringify(ticketData),
+        success: function (data) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã gửi yêu cầu',
+                // Chú ý: Backend đã sửa để trả về TicketId (chữ hoa/thường tùy vào cấu hình JSON của C#)
+                text: 'Mã hồ sơ của bạn là #' + data.ticketId,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Reset form sau khi gửi thành công để người dùng nhập mới sạch sẽ hơn
+                $('#createTicketForm')[0].reset();
 
-    Swal.fire({
-        icon: 'success',
-        title: 'Đã gửi yêu cầu',
-        text: 'Mã hồ sơ của bạn là #' + newTicket.id,
-        confirmButtonText: 'OK'
-    }).then(() => {
-        renderTickets();
-        calculateStats();
+                loadTicketsFromApi();
+                calculateStats();
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("Lỗi:", xhr.responseText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi gửi yêu cầu',
+                text: 'Có lỗi xảy ra: ' + (xhr.responseText || 'Vui lòng thử lại.'),
+                confirmButtonText: 'OK'
+            });
+        }
     });
 });
+
 
 // 6. XEM CHI TIẾT
 function openViewModal(id) {
@@ -139,4 +253,33 @@ function openViewModal(id) {
     $('#viewStatusBadge').attr('class', 'badge ' + badgeClass).text(t.status);
 
     viewModal.show();
+}
+
+
+async function GetAll () {
+    try {
+        const response = await fetch('/User/Tickets/GetAll', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (response.status === 401) {
+            alert("Bạn chưa đăng nhập hoặc token hết hạn");
+            return [];
+        }
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách ticket:', error);
+        return [];
+    }
 }
