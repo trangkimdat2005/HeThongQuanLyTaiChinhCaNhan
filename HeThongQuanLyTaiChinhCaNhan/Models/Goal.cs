@@ -21,6 +21,8 @@ public partial class Goal
 
     public DateTime? UpdatedAt { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual ICollection<GoalDeposit> GoalDeposits { get; set; } = new List<GoalDeposit>();
 
     public virtual User User { get; set; } = null!;

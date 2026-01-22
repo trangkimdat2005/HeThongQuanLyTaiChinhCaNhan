@@ -32,3 +32,98 @@
     .goal-completed .badge {
         background-color: #1cc88a !important;
     }
+
+.status-auto-changed {
+    animation: highlightStatus 0.6s ease-in-out;
+    border: 2px solid #ffc107 !important;
+    background-color: #fff8e1 !important;
+}
+
+@keyframes highlightStatus {
+    0% {
+        background-color: #fff8e1;
+        border-color: #ffc107;
+    }
+    50% {
+        background-color: #ffecb3;
+        border-color: #ffa000;
+    }
+    100% {
+        background-color: #fff8e1;
+        border-color: #ffc107;
+    }
+}
+
+#goalStatus option:disabled {
+    color: #999 !important; 
+    background-color: #f8f9fa !important;
+    text-decoration: line-through; 
+}
+
+#goalStatus option:not(:disabled) {
+    color: #212529 !important; 
+    font-weight: 500;
+}
+
+#goalStatus:has(option:disabled) {
+    cursor: pointer; 
+}
+
+.form-select[disabled] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Remove number input spinners */
+#targetAmount::-webkit-outer-spin-button,
+#targetAmount::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#targetAmount[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Ensure text input behavior for formatted numbers */
+#targetAmount {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#depositModal .modal-dialog {
+    max-width: 500px;
+}
+
+#depositModal .modal-body {
+    padding: 2rem;
+}
+
+#depositModal #depositAmount {
+    font-size: 1.5rem;
+    padding: 0.75rem 1rem;
+    letter-spacing: 1px;
+}
+
+#depositModal .input-group-text {
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+}
+
+#depositModal .form-select,
+#depositModal textarea {
+    font-size: 1rem;
+}
+
+#depositModal .btn-success {
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+}
+
+#depositAmount:focus,
+#targetAmount:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+}

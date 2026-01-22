@@ -19,6 +19,8 @@ public partial class Category
 
     public DateTime? CreatedAt { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();

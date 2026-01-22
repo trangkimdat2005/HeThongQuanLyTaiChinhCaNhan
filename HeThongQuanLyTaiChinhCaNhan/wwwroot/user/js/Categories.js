@@ -1,37 +1,40 @@
-﻿// 1. MOCK DATA
-var mockCategories = [
-    // Khoản Chi (Expense)
-    { id: 1, name: "Ăn uống", type: "Expense", icon: "fa-utensils", color: "#e74a3b" },
-    { id: 2, name: "Di chuyển", type: "Expense", icon: "fa-car", color: "#f6c23e" },
-    { id: 3, name: "Mua sắm", type: "Expense", icon: "fa-shopping-cart", color: "#6f42c1" },
-    { id: 4, name: "Hóa đơn", type: "Expense", icon: "fa-file-invoice", color: "#4e73df" },
-    { id: 5, name: "Y tế", type: "Expense", icon: "fa-pills", color: "#1cc88a" },
+﻿// 1. BIẾN LƯU TRỮ DỮ LIỆU (Ban đầu để trống hoặc chứa data mặc định)
+var mockCategories = [];
+var filterType = 'Expense';
 
-    // Khoản Thu (Income)
-    { id: 6, name: "Lương", type: "Income", icon: "fa-money-bill", color: "#1cc88a" },
-    { id: 7, name: "Thưởng", type: "Income", icon: "fa-gift", color: "#36b9cc" },
-    { id: 8, name: "Đầu tư", type: "Income", icon: "fa-chart-line", color: "#f6c23e" }
-];
-
-var filterType = 'Expense'; // Mặc định hiển thị Chi tiêu trước
-var modalInstance;
-
-$(document).ready(function () {
-    renderCategories();
+$(document).ready(async function () {
+    // Gọi API lấy dữ liệu ngay khi trang tải xong
+    await refreshData();
 });
 
-// 2. RENDER
-function renderCategories() {
-    // Lọc data theo Tab hiện tại
-    var filtered = mockCategories.filter(c => c.type === filterType);
-    var html = '';
+// Hàm này dùng để đồng bộ dữ liệu từ Server về biến mockCategories
+async function refreshData() {
+    const data = await GetAll();
+    if (data) {
+        // Map dữ liệu từ C# (CategoryId, CategoryName...) sang định dạng đồng nhất
+        mockCategories = data.map(c => ({
+            id: c.categoryId || c.CategoryId,
+            name: c.categoryName || c.CategoryName,
+            type: c.type || c.Type,
+            icon: c.icon || c.Icon,
+            color: c.color || c.Color
+        }));
+        renderCategories(); // Sau khi có data thì vẽ ra giao diện
+    }
+}
 
+// 2. RENDER (Sử dụng dữ liệu từ biến mockCategories)
+function renderCategories() {
+    // Lọc data từ biến mockCategories dựa trên filterType
+    var filtered = mockCategories.filter(c => c.type === filterType);
+
+    var html = '';
     if (filtered.length === 0) {
-        html = `<div class="col-12 text-center py-5 text-muted">Chưa có danh mục nào. Hãy tạo mới!</div>`;
+        html = `<div class="col-12 text-center py-5 text-muted">Chưa có danh mục nào thuộc nhóm ${filterType}.</div>`;
     } else {
         filtered.forEach(c => {
             html += `
-            <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
                 <div class="card category-card shadow-sm h-100">
                     <div class="card-body d-flex align-items-center justify-content-between p-3">
                         <div class="d-flex align-items-center">
@@ -42,7 +45,6 @@ function renderCategories() {
                                 ${c.name}
                             </div>
                         </div>
-                        
                         <div class="dropdown">
                             <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
@@ -54,11 +56,9 @@ function renderCategories() {
                         </div>
                     </div>
                 </div>
-            </div>
-            `;
+            </div>`;
         });
     }
-
     $('#categoryList').html(html);
 }
 
@@ -91,7 +91,7 @@ function openCategoryModal(mode, id = null) {
             $('#catName').val(item.name);
             $('#catIcon').val(item.icon);
             $('#catColor').val(item.color);
-        }
+        }   
     }
 
     updatePreview();
@@ -108,25 +108,84 @@ function updatePreview() {
 }
 
 // 4. SUBMIT FORM
-$('#categoryForm').on('submit', function (e) {
+$('#categoryForm').on('submit', async function (e) {
     e.preventDefault();
-    modalInstance.hide();
 
-    var action = $('#catID').val() ? 'Cập nhật' : 'Tạo mới';
+    // 1. Thu thập dữ liệu từ Form
+    const id = $('#catID').val();
+    const categoryData = {
+        CategoryId: id ? parseInt(id) : 0,
+        CategoryName: $('#catName').val().trim(),
+        Type: $('#catType').val(),
+        Icon: $('#catIcon').val(),
+        Color: $('#catColor').val()
+    };
 
-    Swal.fire({
-        icon: 'success',
-        title: 'Thành công',
-        text: `Đã ${action} danh mục thành công!`,
-        timer: 1500,
-        showConfirmButton: false
-    }).then(() => {
-        // Reload data demo
-        renderCategories();
-    });
+    // Kiểm tra nhanh dữ liệu trước khi gửi
+    if (!categoryData.CategoryName) {
+        Swal.fire('Lỗi', 'Vui lòng nhập tên danh mục', 'error');
+        return;
+    }
+
+    try {
+        // 2. Xác định endpoint: Nếu có ID là Update, không có là Create
+        const url = categoryData.CategoryId > 0
+            ? '/User/Categories/Update'
+            : '/User/Categories/Create';
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(categoryData)
+        });
+
+        if (response.ok) {
+            // 3. Nếu thành công: Ẩn Modal và Thông báo
+            modalInstance.hide();
+
+            var actionText = categoryData.CategoryId > 0 ? 'Cập nhật' : 'Tạo mới';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công',
+                text: `Đã ${actionText} danh mục thành công!`,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                // 4. Cập nhật lại Mock Data và Render lại giao diện
+                refreshData();
+            });
+        } else {
+            const errorMsg = await response.text();
+            Swal.fire('Lỗi', 'Không thể lưu dữ liệu: ' + errorMsg, 'error');
+        }
+    } catch (error) {
+        console.error("Submit error:", error);
+        Swal.fire('Lỗi', 'Kết nối đến server thất bại!', 'error');
+    }
 });
 
-// 5. DELETE
+
+async function GetAll () {
+    try {
+        const response = await fetch('/User/Categories/GetAll');
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        // xử lý data ở đây
+        // render table, chart, v.v.
+
+        return data;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 function deleteCategory(id) {
     Swal.fire({
         title: 'Xóa danh mục?',
@@ -134,10 +193,45 @@ function deleteCategory(id) {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'Xóa ngay'
-    }).then((result) => {
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xóa ngay',
+        cancelButtonText: 'Hủy'
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            Swal.fire('Đã xóa', '', 'success');
+            try {
+                // --- THAY ĐỔI Ở ĐÂY ---
+                // 1. URL: nối thêm ID vào sau (dùng dấu huyền ` để nối chuỗi)
+                // 2. Method: DELETE
+                // 3. Body: Bỏ đi
+                const response = await fetch(`/User/Categories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                // ----------------------
+
+                if (response.ok) {
+                    Swal.fire(
+                        'Đã xóa!',
+                        'Danh mục đã được xóa thành công.',
+                        'success'
+                    ).then(() => {
+                        // Reload data
+                        if (typeof refreshData === "function") {
+                            refreshData();
+                        } else {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    const errorMsg = await response.text();
+                    Swal.fire('Lỗi', errorMsg || 'Không thể xóa danh mục này.', 'error');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                Swal.fire('Lỗi', 'Lỗi kết nối đến server.', 'error');
+            }
         }
     })
 }

@@ -1,3 +1,11 @@
+@model IEnumerable<HeThongQuanLyTaiChinhCaNhan.Models.Wallet>
+@{
+	ViewData["Title"] = "Ví Của Tôi";
+	Layout = "~/Areas/User/Views/Shared/_UserLayout.cshtml";
+
+	var walletList = Model?.ToList() ?? new List<HeThongQuanLyTaiChinhCaNhan.Models.Wallet>();
+	decimal totalBalance = walletList.Sum(w => w.Balance ?? 0);
+}
 
 <link href="~/user/css/Wallets.css" rel="stylesheet" />
 
@@ -7,9 +15,11 @@
 		<h3 class="fw-bold text-dark mb-0">Ví Của Tôi</h3>
 		<p class="text-muted small mb-0">Quản lý các nguồn tiền: Tiền mặt, Ngân hàng, Ví điện tử...</p>
 	</div>
-	<button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openWalletModal('add')">
-		<i class="fas fa-plus me-2"></i> Thêm Ví Mới
-	</button>
+	<div>
+		<button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="openWalletModal('add')">
+			<i class="fas fa-plus me-2"></i> Thêm Ví Mới
+		</button>
+	</div>
 </div>
 
 <div class="row mb-4">
@@ -19,7 +29,7 @@
 				<div class="row align-items-center">
 					<div class="col-md-8">
 						<h5 class="text-white-50 text-uppercase small fw-bold mb-1">Tổng tài sản hiện có</h5>
-						<h1 class="display-5 fw-bold mb-0" id="totalBalanceDisplay">0 đ</h1>
+						<h1 class="display-5 fw-bold mb-0">@totalBalance.ToString("N0") đ</h1>
 					</div>
 					<div class="col-md-4 text-md-end mt-3 mt-md-0">
 						<i class="fas fa-wallet fa-4x text-white opacity-25"></i>
@@ -33,7 +43,78 @@
 	</div>
 </div>
 
-<div class="row g-4" id="walletList">
+<div class="row g-4">
+	@if (walletList != null && walletList.Any())
+	{
+		foreach (var wallet in walletList)
+		{
+			var bgClass = "bg-wallet-bank";
+			var iconBg = "#4e73df";
+
+			if (wallet.WalletType == "Cash") { bgClass = "bg-wallet-cash"; iconBg = "#1cc88a"; }
+			else if (wallet.WalletType == "E-Wallet") { bgClass = "bg-wallet-ewallet"; iconBg = "#e74a3b"; }
+			else if (wallet.WalletType == "Credit Card") { bgClass = "bg-wallet-credit"; iconBg = "#f6c23e"; }
+
+			var balanceColor = wallet.Balance >= 0 ? "text-dark" : "text-danger";
+
+			<div class="col-xl-3 col-md-6">
+				<div class="card shadow-sm wallet-card h-100 @bgClass">
+					<div class="card-body">
+						<div class="dropdown wallet-actions">
+							<a href="#" class="text-muted" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></a>
+							<ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+								<li><a class="dropdown-item" href="#" onclick="openWalletModal('edit', @wallet.WalletId)"><i class="fas fa-edit me-2 text-primary"></i>Sửa</a></li>
+								<li><a class="dropdown-item text-danger" href="#" onclick="deleteWallet(@wallet.WalletId)"><i class="fas fa-trash-alt me-2"></i>Xóa</a></li>
+							</ul>
+						</div>
+
+						<div class="wallet-icon-circle shadow-sm" style="background-color: @iconBg;">
+							<i class="fas @wallet.Icon"></i>
+						</div>
+						<h5 class="fw-bold text-dark mb-1">@wallet.WalletName</h5>
+						<span class="badge bg-white border text-muted mb-3">@wallet.WalletType</span>
+
+						<div class="mt-2">
+							<small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Số dư hiện tại</small>
+							<h4 class="fw-bold mb-0 @balanceColor">@(wallet.Balance?.ToString("N0") ?? "0") đ</h4>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	}
+	else
+	{
+		<!-- Thông báo khi không có ví -->
+		<div class="col-12">
+			<div class="card border-0 shadow-sm">
+				<div class="card-body text-center py-5">
+					<i class="fas fa-wallet fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+					<h5 class="fw-bold text-dark mb-2">Chưa có ví nào</h5>
+					<p class="text-muted mb-4">
+						Bạn chưa tạo ví nào. Hãy nhấn nút <strong>"Thêm Ví Mới"</strong> để bắt đầu quản lý tài chính!
+					</p>
+					<button class="btn btn-primary px-4 fw-bold" onclick="openWalletModal('add')">
+						<i class="fas fa-plus me-2"></i> Tạo Ví Đầu Tiên
+					</button>
+				</div>
+			</div>
+		</div>
+	}
+
+	<!-- Card thêm ví mới -->
+	@if (walletList != null && walletList.Any())
+	{
+		<div class="col-xl-3 col-md-6">
+			<div class="card shadow-sm h-100 border-2 border-dashed bg-light d-flex align-items-center justify-content-center"
+				 style="border-style: dashed; cursor: pointer; min-height: 220px;" onclick="openWalletModal('add')">
+				<div class="text-center text-muted">
+					<i class="fas fa-plus-circle fa-3x mb-2 text-primary opacity-50"></i>
+					<h6 class="fw-bold">Thêm Ví Mới</h6>
+				</div>
+			</div>
+		</div>
+	}
 </div>
 
 <div class="modal fade" id="walletModal" tabindex="-1">
@@ -66,8 +147,18 @@
 						<div class="col-md-6">
 							<label class="form-label fw-bold small">Số Dư Ban Đầu</label>
 							<div class="input-group">
-								<input type="number" class="form-control fw-bold" id="initialBalance" placeholder="0" required>
+								<input type="text" 
+									   class="form-control fw-bold text-end" 
+									   id="initialBalance" 
+									   placeholder="0" 
+									   required
+									   inputmode="numeric"
+									   autocomplete="off">
 								<span class="input-group-text bg-light text-muted small">đ</span>
+							</div>
+							<div class="form-text small text-muted">
+								<i class="fas fa-info-circle me-1"></i>
+								Số tiền sẽ tự động format (VD: 30.000)
 							</div>
 						</div>
 					</div>
@@ -103,7 +194,6 @@
 		</div>
 	</div>
 </div>
-
 
 @section Scripts
 {

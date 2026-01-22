@@ -25,6 +25,8 @@ public partial class Ticket
 
     public DateTime? RepliedAt { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual User? RepliedByNavigation { get; set; }
 
     public virtual User User { get; set; } = null!;

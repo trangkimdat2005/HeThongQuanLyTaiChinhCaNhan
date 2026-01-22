@@ -31,6 +31,8 @@ public partial class User
 
     public DateTime? CreatedAt { get; set; }
 
+    public bool? IsDelete { get; set; }
+
     public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
 
     public virtual ICollection<Category> Categories { get; set; } = new List<Category>();

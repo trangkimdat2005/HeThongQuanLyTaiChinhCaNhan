@@ -1,83 +1,26 @@
-﻿// Dữ liệu giả (Mock Wallets)
-var mockWallets = [
-    { id: 1, name: "Tiền mặt", type: "Cash", balance: 4500000, initial: 500000, icon: "fa-wallet" },
-    { id: 2, name: "Vietcombank", type: "Bank", balance: 15000000, initial: 2000000, icon: "fa-university" },
-    { id: 3, name: "Momo", type: "E-Wallet", balance: 500000, initial: 0, icon: "fa-mobile-alt" },
-    { id: 4, name: "VISA Credit", type: "Credit Card", balance: -2500000, initial: 0, icon: "fa-credit-card" }
-];
+﻿
 
 var modalInstance;
 
 $(document).ready(function () {
-    renderWallets();
+    console.log('Wallets.js loaded');
+    
+    $('#initialBalance').on('input', function (e) {
+        var val = $(this).val();
+        var numericValue = val.replace(/[^\d]/g, '');
+
+        if (numericValue) {
+            var formatted = parseInt(numericValue).toLocaleString('vi-VN');
+            $(this).val(formatted);
+        } else {
+            $(this).val('');
+        }
+
+        $(this).data('numeric-value', numericValue ? parseInt(numericValue) : 0);
+    });
 });
 
-// 1. RENDER DANH SÁCH VÍ
-function renderWallets() {
-    var html = '';
-    var totalBalance = 0;
-
-    mockWallets.forEach(w => {
-        totalBalance += w.balance;
-
-        // Xác định màu sắc & class dựa trên loại ví
-        var bgClass = 'bg-wallet-bank'; // Default
-        var iconBg = '#4e73df';
-
-        if (w.type === 'Cash') { bgClass = 'bg-wallet-cash'; iconBg = '#1cc88a'; }
-        else if (w.type === 'E-Wallet') { bgClass = 'bg-wallet-ewallet'; iconBg = '#e74a3b'; }
-        else if (w.type === 'Credit Card') { bgClass = 'bg-wallet-credit'; iconBg = '#f6c23e'; }
-
-        // Format tiền tệ
-        var balanceFormatted = w.balance.toLocaleString('vi-VN') + ' đ';
-        var balanceColor = w.balance >= 0 ? 'text-dark' : 'text-danger';
-
-        html += `
-        <div class="col-xl-3 col-md-6">
-            <div class="card shadow-sm wallet-card h-100 ${bgClass}">
-                <div class="card-body">
-                    <div class="dropdown wallet-actions">
-                        <a href="#" class="text-muted" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></a>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
-                            <li><a class="dropdown-item" href="#" onclick="openWalletModal('edit', ${w.id})"><i class="fas fa-edit me-2 text-primary"></i>Sửa</a></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteWallet(${w.id})"><i class="fas fa-trash-alt me-2"></i>Xóa</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="wallet-icon-circle shadow-sm" style="background-color: ${iconBg};">
-                        <i class="fas ${w.icon}"></i>
-                    </div>
-                    <h5 class="fw-bold text-dark mb-1">${w.name}</h5>
-                    <span class="badge bg-white border text-muted mb-3">${w.type}</span>
-                    
-                    <div class="mt-2">
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Số dư hiện tại</small>
-                        <h4 class="fw-bold mb-0 ${balanceColor}">${balanceFormatted}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-    });
-
-    // Thêm nút "Thêm ví mới" dạng Card (Optional)
-    html += `
-    <div class="col-xl-3 col-md-6">
-        <div class="card shadow-sm h-100 border-2 border-dashed bg-light d-flex align-items-center justify-content-center" 
-             style="border-style: dashed; cursor: pointer; min-height: 220px;" onclick="openWalletModal('add')">
-            <div class="text-center text-muted">
-                <i class="fas fa-plus-circle fa-3x mb-2 text-primary opacity-50"></i>
-                <h6 class="fw-bold">Thêm Ví Mới</h6>
-            </div>
-        </div>
-    </div>
-    `;
-
-    $('#walletList').html(html);
-    $('#totalBalanceDisplay').text(totalBalance.toLocaleString('vi-VN') + ' đ');
-}
-
-// 2. MỞ MODAL
+// 1. MỞ MODAL
 function openWalletModal(mode, id = null) {
     var myModalEl = document.getElementById('walletModal');
     modalInstance = new bootstrap.Modal(myModalEl);
@@ -85,25 +28,40 @@ function openWalletModal(mode, id = null) {
     if (mode === 'add') {
         $('#modalTitle').text('Thêm Ví Mới');
         $('#walletForm')[0].reset();
-        $('#walletID').val('');
-        $('#walletIcon').val('fa-wallet'); // Default
+        $('#walletID').val('0');
+        $('#walletIcon').val('fa-wallet');
+        $('#initialBalance').val('0').removeData('numeric-value');
         updateIconPreview();
+        modalInstance.show();
     } else {
-        var wallet = mockWallets.find(w => w.id === id);
-        if (wallet) {
-            $('#modalTitle').text('Cập Nhật Ví');
-            $('#walletID').val(wallet.id);
-            $('#walletName').val(wallet.name);
-            $('#walletType').val(wallet.type);
-            $('#initialBalance').val(wallet.initial);
-            $('#walletIcon').val(wallet.icon);
-            updateIconPreview();
-        }
+        $('#modalTitle').text('Cập Nhật Ví');
+
+        // Fetch wallet data from server
+        $.get('/User/Wallets/GetById/' + id, function (res) {
+            if (res.success) {
+                var wallet = res.data;
+                $('#walletID').val(wallet.walletId);
+                $('#walletName').val(wallet.walletName);
+                $('#walletType').val(wallet.walletType);
+                
+                // Format and set initial balance
+                var formattedAmount = parseInt(wallet.initialBalance).toLocaleString('vi-VN');
+                $('#initialBalance').val(formattedAmount);
+                $('#initialBalance').data('numeric-value', wallet.initialBalance);
+                
+                $('#walletIcon').val(wallet.icon);
+                updateIconPreview();
+                modalInstance.show();
+            } else {
+                Swal.fire('Lỗi', res.message || 'Không tìm thấy ví', 'error');
+            }
+        }).fail(function () {
+            Swal.fire('Lỗi', 'Không thể tải dữ liệu ví', 'error');
+        });
     }
-    modalInstance.show();
 }
 
-// 3. LOGIC TỰ ĐỘNG CHỌN ICON THEO LOẠI
+// 2. LOGIC TỰ ĐỘNG CHỌN ICON THEO LOẠI
 function autoSelectIcon() {
     var type = $('#walletType').val();
     var iconSelect = $('#walletIcon');
@@ -112,8 +70,9 @@ function autoSelectIcon() {
     else if (type === 'Bank') iconSelect.val('fa-university');
     else if (type === 'E-Wallet') iconSelect.val('fa-mobile-alt');
     else if (type === 'Credit Card') iconSelect.val('fa-credit-card');
+    else iconSelect.val('fa-wallet');
 
-    updateIconPreview(); // Cập nhật hình ảnh icon bên cạnh
+    updateIconPreview();
 }
 
 function updateIconPreview() {
@@ -121,36 +80,184 @@ function updateIconPreview() {
     $('#iconPreview').attr('class', 'fas ' + iconClass);
 }
 
-// 4. LƯU VÍ
+// 3. LƯU VÍ (CREATE/UPDATE)
 $('#walletForm').on('submit', function (e) {
     e.preventDefault();
-    modalInstance.hide();
 
-    Swal.fire({
-        icon: 'success',
-        title: 'Thành công',
-        text: 'Thông tin ví đã được lưu!',
-        timer: 1500,
-        showConfirmButton: false
-    }).then(() => {
-        // Trong thực tế: Reload lại data từ server
-        // Ở đây mình reload trang demo
-        location.reload();
+    var id = $('#walletID').val();
+    var isNew = id == '0' || id == '';
+    var url = isNew ? '/User/Wallets/Create' : '/User/Wallets/Update';
+
+    var walletName = $('#walletName').val();
+    var walletType = $('#walletType').val();
+    
+    // Get the numeric value stored during input formatting
+    var initialBalance = $('#initialBalance').data('numeric-value');
+    if (initialBalance === undefined || initialBalance === null) {
+        initialBalance = 0;
+    }
+    
+    var icon = $('#walletIcon').val();
+
+    // Validate
+    if (!walletName) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Thiếu thông tin',
+            text: 'Vui lòng nhập tên ví!'
+        });
+        return;
+    }
+
+    if (initialBalance < 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Số dư không hợp lệ',
+            text: 'Số dư ban đầu không được âm!'
+        });
+        return;
+    }
+
+    var payload = {
+        WalletId: isNew ? 0 : parseInt(id),
+        WalletName: walletName,
+        WalletType: walletType,
+        InitialBalance: parseFloat(initialBalance),
+        Icon: icon
+    };
+
+    console.log('Sending payload:', payload);
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        success: function (res) {
+            console.log('Response:', res);
+            if (res.success) {
+                modalInstance.hide();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công',
+                    text: res.message || 'Đã lưu ví!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Lỗi', res.message || 'Có lỗi xảy ra', 'error');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', xhr.responseText);
+            var errorMsg = 'Không thể kết nối server';
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.message) errorMsg = response.message;
+            } catch (e) {
+                errorMsg += ': ' + error;
+            }
+            Swal.fire('Lỗi', errorMsg, 'error');
+        }
     });
 });
 
-// 5. XÓA VÍ
+// 4. XÓA VÍ
 function deleteWallet(id) {
     Swal.fire({
         title: 'Xóa ví này?',
-        text: "Cảnh báo: Tất cả giao dịch thuộc ví này cũng sẽ bị ẩn!",
+        text: "Lưu ý: Nếu có giao dịch thuộc ví này, sẽ không thể xóa!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
-        confirmButtonText: 'Xóa luôn'
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
     }).then((result) => {
         if (result.isConfirmed) {
-            Swal.fire('Đã xóa!', '', 'success');
+            $.post('/User/Wallets/Delete/' + id, function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã xóa!',
+                        text: res.message || 'Ví đã bị xóa.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Lỗi', res.message || 'Không thể xóa ví', 'error');
+                }
+            }).fail(function () {
+                Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+            });
         }
-    })
+    });
+}
+
+function debugDatabase() {
+    $.get('/User/Wallets/Debug', function (res) {
+        if (res.success) {
+            var info = `
+                <div class="text-start">
+                    <h6>Database Info:</h6>
+                    <ul>
+                        <li>Total Users: <strong>${res.totalUsers}</strong></li>
+                        <li>Total Wallets: <strong>${res.totalWallets}</strong></li>
+                        <li>Total Transactions: <strong>${res.totalTransactions}</strong></li>
+                    </ul>
+                    <h6>Users:</h6>
+                    <pre>${JSON.stringify(res.users, null, 2)}</pre>
+                    <h6>Wallets:</h6>
+                    <pre>${JSON.stringify(res.wallets, null, 2)}</pre>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'Debug Info',
+                html: info,
+                width: '800px',
+                showCloseButton: true,
+                showConfirmButton: false,
+                footer: '<button class="btn btn-warning" onclick="seedData()">Tạo Dữ Liệu Mẫu</button>'
+            });
+        } else {
+            Swal.fire('Lỗi', res.message, 'error');
+        }
+    }).fail(function () {
+        Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+    });
+}
+
+function seedData() {
+    Swal.fire({
+        title: 'Tạo dữ liệu mẫu?',
+        text: "Sẽ tạo 3 ví mẫu cho user hiện tại",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Tạo',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.get('/User/Wallets/SeedData', function (res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: res.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Thông báo', res.message, 'info');
+                }
+            }).fail(function () {
+                Swal.fire('Lỗi', 'Không thể tạo dữ liệu mẫu', 'error');
+            });
+        }
+    });
 }
