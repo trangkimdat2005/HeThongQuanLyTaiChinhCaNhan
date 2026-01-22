@@ -154,22 +154,53 @@ $('#transactionForm').on('submit', function (e) {
         return;
     }
 
-    // ✅ CHỈ KIỂM TRA SỐ DƯ KHI THÊM MỚI GIAO DỊCH CHI
-    if (type === 'Expense' && isNew) {
+    //  KIỂM TRA SỐ DƯ VÍ CHO GIAO DỊCH CHI 
+    if (type === 'Expense') {
         $.get('/User/Transactions/GetWalletBalance/' + walletId, function (walletRes) {
             if (walletRes.success) {
                 var currentBalance = walletRes.balance;
-                if (currentBalance < amountNumeric) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Số dư không đủ!',
-                        html: `<p>Số dư hiện tại: <strong>${currentBalance.toLocaleString('vi-VN')}đ</strong></p>
-                               <p>Số tiền cần: <strong>${amountNumeric.toLocaleString('vi-VN')}đ</strong></p>`,
-                        confirmButtonText: 'Đóng'
+
+                // Nếu đang sửa, cần hoàn trả số dư cũ trước khi kiểm tra
+                if (!isNew) {
+                    $.get('/User/Transactions/GetById/' + id, function (transRes) {
+                        if (transRes.success) {
+                            var oldTransaction = transRes.data;
+                            
+                            // Chỉ hoàn trả nếu cùng ví
+                            if (oldTransaction.walletId == walletId) {
+                                if (oldTransaction.type === 'Income') {
+                                    currentBalance -= oldTransaction.amount;
+                                } else if (oldTransaction.type === 'Expense') {
+                                    currentBalance += oldTransaction.amount;
+                                }
+                            }
+
+                            // Kiểm tra số dư sau khi hoàn trả
+                            if (currentBalance < amountNumeric) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Số dư không đủ!',
+                                    confirmButtonText: 'Đóng'
+                                });
+                                return;
+                            }
+                            submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type);
+                        }
+                    }).fail(function () {
+                        Swal.fire('Lỗi', 'Không thể kiểm tra giao dịch cũ', 'error');
                     });
-                    return;
+                } else {
+                    // Thêm mới: Chỉ cần kiểm tra số dư hiện tại
+                    if (currentBalance < amountNumeric) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Số dư không đủ!',
+                            confirmButtonText: 'Đóng'
+                        });
+                        return;
+                    }
+                    submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type);
                 }
-                submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type);
             } else {
                 Swal.fire('Lỗi', walletRes.message || 'Không thể lấy thông tin ví', 'error');
             }
@@ -177,7 +208,7 @@ $('#transactionForm').on('submit', function (e) {
             Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
         });
     } else {
-        // Khoản thu hoặc Sửa giao dịch: Submit trực tiếp (backend sẽ kiểm tra)
+        // Khoản thu: Submit trực tiếp
         submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type);
     }
 });
@@ -230,8 +261,8 @@ function submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, 
 
 function deleteTransaction(id) {
     Swal.fire({
-        title: 'Xóa giao dịch?',
-        text: "Hành động này không thể hoàn tác!",
+        title: 'Xóa giao dịch',
+        text: "Bạn chắc chắn muốn xóa giao dịch này?",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',

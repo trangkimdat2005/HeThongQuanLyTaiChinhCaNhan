@@ -446,75 +446,9 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
             }
         }
 
-        /// <summary>
-        /// Debug endpoint - Admin only
-        /// </summary>
-        [HttpGet("Debug")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Debug()
-        {
-            try
-            {
-                var totalUsers = _context.Users.Count();
-                var totalWallets = _context.Wallets.Count();
-                var totalTransactions = _context.Transactions.Count();
-
-                var users = _context.Users
-                    .AsNoTracking()
-                    .Select(u => new {
-                        u.UserId,
-                        u.FullName,
-                        u.Email,
-                        u.Role,
-                        WalletCount = _context.Wallets.Count(w => w.UserId == u.UserId),
-                        TransactionCount = _context.Transactions.Count(t => t.UserId == u.UserId)
-                    })
-                    .ToList();
-
-                var wallets = _context.Wallets
-                    .AsNoTracking()
-                    .Select(w => new {
-                        w.WalletId,
-                        w.WalletName,
-                        w.UserId,
-                        w.WalletType,
-                        UserName = _context.Users
-                            .Where(u => u.UserId == w.UserId)
-                            .Select(u => u.FullName)
-                            .FirstOrDefault(),
-                        w.Balance,
-                        w.InitialBalance,
-                        TransactionCount = _context.Transactions.Count(t => t.WalletId == w.WalletId),
-                        w.CreatedAt
-                    })
-                    .OrderByDescending(w => w.CreatedAt)
-                    .ToList();
-
-                return Json(new
-                {
-                    success = true,
-                    totalUsers,
-                    totalWallets,
-                    totalTransactions,
-                    users,
-                    wallets,
-                    timestamp = DateTime.Now
-                });
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
-                    success = false,
-                    message = $"Lỗi: {ex.Message}"
-                });
-            }
-        }
+        
     }
 
-    /// <summary>
-    /// DTO class để binding data từ JSON request
-    /// </summary>
     public class WalletDto
     {
         public int WalletId { get; set; }
