@@ -1,12 +1,11 @@
-
+@model HeThongQuanLyTaiChinhCaNhan.ViewModels.UserDashboardVM
 
 <link href="~/user/css/Dashboard.css" rel="stylesheet" />
-
 
 <div class="d-flex justify-content-between align-items-center mb-4">
 	<div>
 		<h3 class="fw-bold text-dark mb-0">Tổng Quan Tài Chính</h3>
-		<p class="text-muted small mb-0">Chào buổi sáng, Nguyễn Văn A!</p>
+		<p class="text-muted small mb-0">Chào buổi @(DateTime.Now.Hour < 12 ? "sáng" : (DateTime.Now.Hour < 18 ? "chiều" : "tối")), @User.Identity?.Name!</p>
 	</div>
 	<button class="btn btn-primary shadow-sm fw-bold rounded-pill px-4" onclick="quickAddTransaction()">
 		<i class="fas fa-plus me-2"></i> Ghi Chép Nhanh
@@ -14,14 +13,14 @@
 </div>
 
 <div class="row g-4 mb-4">
-
+	<!-- Card Tổng Tài Sản -->
 	<div class="col-xl-4 col-md-6">
 		<div class="card border-0 shadow-sm h-100 overflow-hidden text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
 			<div class="card-body position-relative">
 				<div class="d-flex justify-content-between align-items-center">
 					<div>
 						<div class="text-white-50 small text-uppercase fw-bold mb-1">Tổng Tài Sản</div>
-						<div class="h2 mb-0 fw-bold">20.000.000 đ</div>
+						<div class="h2 mb-0 fw-bold">@Model.TotalAssets.ToString("N0") đ</div>
 					</div>
 					<div class="icon-circle bg-white bg-opacity-25 text-white">
 						<i class="fas fa-wallet fa-2x"></i>
@@ -29,7 +28,7 @@
 				</div>
 				<div class="mt-4 small">
 					<span class="badge bg-white bg-opacity-25 border border-white border-opacity-25">
-						<i class="fas fa-arrow-up"></i> +5.2%
+						<i class="fas fa-arrow-@(Model.AssetGrowthPercent >= 0 ? "up" : "down")"></i> @Model.AssetGrowthPercent.ToString("+0.0;-0.0;0")%
 					</span>
 					<span class="text-white-50 ms-2">so với tháng trước</span>
 				</div>
@@ -38,39 +37,41 @@
 		</div>
 	</div>
 
+	<!-- Card Thu Nhập -->
 	<div class="col-xl-4 col-md-6">
 		<div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
 			<div class="card-body">
 				<div class="d-flex justify-content-between align-items-center">
 					<div>
-						<div class="text-success small text-uppercase fw-bold mb-1">Thu Nhập (Tháng 1)</div>
-						<div class="h3 mb-0 fw-bold text-gray-800">15.000.000 đ</div>
+						<div class="text-success small text-uppercase fw-bold mb-1">Thu Nhập (Tháng @DateTime.Now.Month)</div>
+						<div class="h3 mb-0 fw-bold text-gray-800">@Model.MonthlyIncome.ToString("N0") đ</div>
 					</div>
 					<div class="icon-circle bg-success bg-opacity-10 text-success">
 						<i class="fas fa-download fa-lg"></i>
 					</div>
 				</div>
 				<div class="mt-3 small text-muted">
-					<span class="text-success fw-bold"><i class="fas fa-level-up-alt"></i> 1 khoản</span> mới nhận
+					<span class="text-success fw-bold"><i class="fas fa-level-up-alt"></i> @Model.NewIncomeCount khoản</span> mới nhận
 				</div>
 			</div>
 		</div>
 	</div>
 
+	<!-- Card Chi Tiêu -->
 	<div class="col-xl-4 col-md-6">
 		<div class="card border-0 shadow-sm h-100 border-start border-4 border-danger">
 			<div class="card-body">
 				<div class="d-flex justify-content-between align-items-center">
 					<div>
-						<div class="text-danger small text-uppercase fw-bold mb-1">Chi Tiêu (Tháng 1)</div>
-						<div class="h3 mb-0 fw-bold text-gray-800">1.100.000 đ</div>
+						<div class="text-danger small text-uppercase fw-bold mb-1">Chi Tiêu (Tháng @DateTime.Now.Month)</div>
+						<div class="h3 mb-0 fw-bold text-gray-800">@Model.MonthlyExpense.ToString("N0") đ</div>
 					</div>
 					<div class="icon-circle bg-danger bg-opacity-10 text-danger">
 						<i class="fas fa-upload fa-lg"></i>
 					</div>
 				</div>
 				<div class="mt-3 small text-muted">
-					Đã dùng <span class="text-danger fw-bold">12%</span> ngân sách
+					Đã dùng <span class="text-danger fw-bold">@Model.BudgetUsedPercent%</span> ngân sách
 				</div>
 			</div>
 		</div>
@@ -78,7 +79,7 @@
 </div>
 
 <div class="row g-4 mb-4">
-
+	<!-- Biểu đồ Dòng Tiền -->
 	<div class="col-xl-8 col-lg-7">
 		<div class="card border-0 shadow-sm h-100">
 			<div class="card-header bg-white py-3 d-flex flex-row align-items-center justify-content-between">
@@ -95,77 +96,75 @@
 		</div>
 	</div>
 
+	<!-- Ví Của Tôi -->
 	<div class="col-xl-4 col-lg-5">
 		<div class="card border-0 shadow-sm h-100">
 			<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
 				<h6 class="m-0 fw-bold text-dark">Ví Của Tôi</h6>
-				<a href="/user/wallets.html" class="small text-decoration-none fw-bold">Xem tất cả</a>
+				<a href="/User/Wallets" class="small text-decoration-none fw-bold">Xem tất cả</a>
 			</div>
 			<div class="card-body">
-
-				<div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-					<div class="me-3 position-relative">
-						<img src="https://img.icons8.com/color/48/vietcombank.png" width="45" height="45" class="rounded-3 shadow-sm p-1 bg-white" alt="VCB">
-						<span class="position-absolute bottom-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle"></span>
-					</div>
-					<div class="flex-grow-1">
-						<div class="fw-bold text-dark">Vietcombank</div>
-						<div class="small text-muted">Tài khoản chính</div>
-					</div>
-					<div class="text-end">
-						<div class="fw-bold text-dark">15.000.000 đ</div>
-					</div>
-				</div>
-
-				<div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-					<div class="me-3">
-						<div class="rounded-3 bg-success bg-opacity-10 d-flex align-items-center justify-content-center text-success" style="width: 45px; height: 45px;">
-							<i class="fas fa-money-bill-wave fa-lg"></i>
+				@if (Model.Wallets.Any())
+				{
+					@foreach (var wallet in Model.Wallets)
+					{
+						<div class="d-flex align-items-center @(wallet != Model.Wallets.Last() ? "mb-4 pb-3 border-bottom" : "")">
+							<div class="me-3 position-relative">
+								@if (!string.IsNullOrEmpty(wallet.Icon) && wallet.Icon.StartsWith("http"))
+								{
+									<img src="@wallet.Icon" width="45" height="45" class="rounded-3 shadow-sm p-1 bg-white" alt="@wallet.WalletName">
+								}
+								else
+								{
+									<div class="rounded-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center text-primary" style="width: 45px; height: 45px;">
+										<i class="fas @(wallet.Icon ?? "fa-wallet") fa-lg"></i>
+									</div>
+								}
+								@if (wallet.IsActive)
+								{
+									<span class="position-absolute bottom-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle"></span>
+								}
+							</div>
+							<div class="flex-grow-1">
+								<div class="fw-bold text-dark">@wallet.WalletName</div>
+								<div class="small text-muted">@wallet.WalletType</div>
+							</div>
+							<div class="text-end">
+								<div class="fw-bold text-dark">@wallet.Balance.ToString("N0") đ</div>
+							</div>
 						</div>
+					}
+				}
+				else
+				{
+					<div class="text-center text-muted py-4">
+						<i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
+						<p>Chưa có ví nào</p>
 					</div>
-					<div class="flex-grow-1">
-						<div class="fw-bold text-dark">Tiền mặt</div>
-						<div class="small text-muted">Ví cá nhân</div>
-					</div>
-					<div class="text-end">
-						<div class="fw-bold text-dark">4.500.000 đ</div>
-					</div>
-				</div>
-
-				<div class="d-flex align-items-center">
-					<div class="me-3">
-						<img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" width="45" height="45" class="rounded-3 shadow-sm p-1 bg-white" style="object-fit: contain;">
-					</div>
-					<div class="flex-grow-1">
-						<div class="fw-bold text-dark">Momo</div>
-						<div class="small text-muted">Ví điện tử</div>
-					</div>
-					<div class="text-end">
-						<div class="fw-bold text-dark">500.000 đ</div>
-					</div>
-				</div>
+				}
 
 				<div class="mt-4 text-center">
-					<button class="btn btn-outline-primary btn-sm rounded-pill w-100 border-dashed" onclick="window.location.href='/user/wallets.html'">
+					<button class="btn btn-outline-primary btn-sm rounded-pill w-100 border-dashed" onclick="window.location.href='/User/Wallets'">
 						<i class="fas fa-plus me-1"></i> Thêm ví mới
 					</button>
 				</div>
-
 			</div>
 		</div>
 	</div>
 </div>
 
+<!-- Giao Dịch Gần Đây -->
 <div class="card border-0 shadow-sm">
 	<div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
 		<h6 class="m-0 fw-bold text-primary">Giao Dịch Gần Đây</h6>
 		<div class="dropdown">
-			<button class="btn btn-light btn-sm fw-bold" type="button" data-bs-toggle="dropdown">
+			<button class="btn btn-light btn-sm fw-bold filter-dropdown-toggle" type="button" data-bs-toggle="dropdown">
 				<i class="fas fa-filter me-1 text-muted"></i> Lọc
 			</button>
-			<ul class="dropdown-menu shadow border-0">
-				<li><a class="dropdown-item" href="#">Hôm nay</a></li>
-				<li><a class="dropdown-item" href="#">Tuần này</a></li>
+			<ul class="dropdown-menu dropdown-menu-end shadow border-0">
+				<li><a class="dropdown-item" href="javascript:void(0)" onclick="filterTransactions('all')"><i class="fas fa-list me-2 text-muted"></i>Toàn bộ</a></li>
+				<li><a class="dropdown-item" href="javascript:void(0)" onclick="filterTransactions('today')"><i class="fas fa-calendar-day me-2 text-muted"></i>Hôm nay</a></li>
+				<li><a class="dropdown-item" href="javascript:void(0)" onclick="filterTransactions('week')"><i class="fas fa-calendar-week me-2 text-muted"></i>Tuần này</a></li>
 			</ul>
 		</div>
 	</div>
@@ -181,77 +180,54 @@
 						<th class="text-end pe-4">Số tiền</th>
 					</tr>
 				</thead>
-				<tbody>
-					<tr>
-						<td class="ps-4 text-muted small fw-bold">10/01</td>
-						<td>
-							<div class="d-flex align-items-center">
-								<div class="icon-circle-sm bg-danger bg-opacity-10 text-danger me-2">
-									<i class="fas fa-bolt"></i>
-								</div>
-								<span class="fw-bold text-dark">Hóa đơn</span>
-							</div>
-						</td>
-						<td class="text-secondary small">Thanh toán tiền điện</td>
-						<td><span class="badge bg-light text-dark border">Vietcombank</span></td>
-						<td class="text-end pe-4 fw-bold text-danger">- 500.000 đ</td>
-					</tr>
-
-					<tr>
-						<td class="ps-4 text-muted small fw-bold">08/01</td>
-						<td>
-							<div class="d-flex align-items-center">
-								<div class="icon-circle-sm bg-warning bg-opacity-10 text-warning me-2">
-									<i class="fas fa-gas-pump"></i>
-								</div>
-								<span class="fw-bold text-dark">Di chuyển</span>
-							</div>
-						</td>
-						<td class="text-secondary small">Đổ xăng xe máy</td>
-						<td><span class="badge bg-light text-dark border">Tiền mặt</span></td>
-						<td class="text-end pe-4 fw-bold text-danger">- 100.000 đ</td>
-					</tr>
-
-					<tr>
-						<td class="ps-4 text-muted small fw-bold">07/01</td>
-						<td>
-							<div class="d-flex align-items-center">
-								<div class="icon-circle-sm bg-danger bg-opacity-10 text-danger me-2">
-									<i class="fas fa-utensils"></i>
-								</div>
-								<span class="fw-bold text-dark">Ăn uống</span>
-							</div>
-						</td>
-						<td class="text-secondary small">Liên hoan công ty</td>
-						<td><span class="badge bg-light text-dark border">Tiền mặt</span></td>
-						<td class="text-end pe-4 fw-bold text-danger">- 450.000 đ</td>
-					</tr>
-
-					<tr>
-						<td class="ps-4 text-muted small fw-bold">05/01</td>
-						<td>
-							<div class="d-flex align-items-center">
-								<div class="icon-circle-sm bg-success bg-opacity-10 text-success me-2">
-									<i class="fas fa-money-bill-wave"></i>
-								</div>
-								<span class="fw-bold text-dark">Lương</span>
-							</div>
-						</td>
-						<td class="text-secondary small">Nhận lương tháng 1</td>
-						<td><span class="badge bg-light text-dark border">Vietcombank</span></td>
-						<td class="text-end pe-4 fw-bold text-success">+ 15.000.000 đ</td>
-					</tr>
+				<tbody id="transactionTableBody">
+					@if (Model.RecentTransactions.Any())
+					{
+						@foreach (var trans in Model.RecentTransactions)
+						{
+							<tr data-transaction-date="@trans.TransactionDate.ToString("yyyy-MM-dd")">
+								<td class="ps-4 text-muted small fw-bold">@trans.TransactionDate.ToString("dd/MM")</td>
+								<td>
+									<div class="d-flex align-items-center">
+										<div class="icon-circle-sm bg-opacity-10 me-2" style="background-color: @trans.CategoryColor; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+											<i class="fas @trans.CategoryIcon" style="color: @trans.CategoryColor;"></i>
+										</div>
+										<span class="fw-bold text-dark">@trans.CategoryName</span>
+									</div>
+								</td>
+								<td class="text-secondary small">@trans.Description</td>
+								<td><span class="badge bg-light text-dark border">@trans.WalletName</span></td>
+								<td class="text-end pe-4 fw-bold @(trans.Type == "Income" ? "text-success" : "text-danger")">
+									@(trans.Type == "Income" ? "+ " : "- ")@trans.Amount.ToString("N0") đ
+								</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr class="no-transactions-row">
+							<td colspan="5" class="text-center text-muted py-4">
+								<i class="fas fa-inbox fa-2x mb-2 opacity-25"></i>
+								<p class="mb-0">Chưa có giao dịch nào</p>
+							</td>
+						</tr>
+					}
 				</tbody>
 			</table>
 		</div>
 		<div class="card-footer bg-white border-top-0 py-3 text-center">
-			<a href="/user/transactions.html" class="text-decoration-none fw-bold small text-primary">Xem toàn bộ lịch sử <i class="fas fa-arrow-right ms-1"></i></a>
+			<a href="/User/Transactions" class="text-decoration-none fw-bold small text-primary">Xem toàn bộ lịch sử <i class="fas fa-arrow-right ms-1"></i></a>
 		</div>
 	</div>
 </div>
 
-
 @section Scripts
 {
+	<script>
+		// Dữ liệu từ C# sang JavaScript
+		var chartLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CashFlowLabels));
+		var chartIncomeData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CashFlowIncomeData));
+		var chartExpenseData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CashFlowExpenseData));
+	</script>
 	<script src="~/user/js/Dashboard.js"></script>
 }
