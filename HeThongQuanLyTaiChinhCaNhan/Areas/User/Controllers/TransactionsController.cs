@@ -1,6 +1,4 @@
-
-﻿using HeThongQuanLyTaiChinhCaNhan.Services.Interfaces;
-﻿using HeThongQuanLyTaiChinhCaNhan.Models;
+using HeThongQuanLyTaiChinhCaNhan.Models;
 using HeThongQuanLyTaiChinhCaNhan.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +10,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
 {
     [Area("User")]
     [Route("User/Transactions")]
-    [Authorize] // Bắt buộc phải đăng nhập
+    [Authorize] 
     public class TransactionsController : Controller
     {
         private readonly AppDbContext _context;
@@ -24,7 +22,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
 
         private string? GetCurrentUserId()
         {
-            return User.FindFirst("UserId")?.Value ?? 
+            return User.FindFirst("UserId")?.Value ??
                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
 
@@ -46,14 +44,14 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
 
             ViewBag.categories = _context.Categories
                 .AsNoTracking()
-                .Where(c => c.UserId == userId)
+                .Where(c => c.UserId == userId && c.IsDelete == false)
                 .OrderBy(c => c.CategoryName)
                 .ToList();
 
             var query = _context.Transactions
                 .Include(t => t.Category)
                 .Include(t => t.Wallet)
-                .Where(t => t.UserId == userId) 
+                .Where(t => t.UserId == userId)
                 .AsQueryable();
 
             // Apply filters if provided
@@ -128,22 +126,37 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Ngày giao dịch không hợp lệ." });
                 }
 
-                // Kiểm tra Category và Wallet thuộc về user hiện tại
+                // ✅ Kiểm tra Category thuộc về user và CHƯA BỊ XÓA
                 var category = _context.Categories
                     .AsNoTracking()
-                    .FirstOrDefault(c => c.CategoryId == dto.CategoryId && c.UserId == userId);
-                
+                    .FirstOrDefault(c => c.CategoryId == dto.CategoryId 
+                                    && c.UserId == userId 
+                                    && c.IsDelete == false);
+
                 if (category == null)
                 {
-                    return Json(new { success = false, message = "Danh mục không tồn tại hoặc không thuộc về bạn." });
+                    return Json(new { success = false, message = "Danh mục không tồn tại!" });
                 }
 
                 var wallet = _context.Wallets
                     .FirstOrDefault(w => w.WalletId == dto.WalletId && w.UserId == userId);
-                
+
                 if (wallet == null)
                 {
                     return Json(new { success = false, message = "Ví không tồn tại hoặc không thuộc về bạn." });
+                }
+
+                if (dto.Type == "Expense")
+                {
+                    var currentBalance = wallet.Balance ?? 0;
+                    if (currentBalance < dto.Amount)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Số dư ví không đủ"
+                        });
+                    }
                 }
 
                 // Sử dụng transaction để đảm bảo tính toàn vẹn dữ liệu
@@ -215,7 +228,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 var transaction = _context.Transactions
                     .Include(t => t.Wallet)
                     .FirstOrDefault(t => t.TransactionId == id && t.UserId == userId);
-                
+
                 if (transaction == null)
                 {
                     return Json(new { success = false, message = "Không tìm thấy giao dịch hoặc bạn không có quyền xóa." });
@@ -224,23 +237,13 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 using var dbTransaction = _context.Database.BeginTransaction();
                 try
                 {
-                    // Hoàn trả số dư ví
-                    var wallet = transaction.Wallet;
-                    if (transaction.Type == "Income")
-                    {
-                        wallet.Balance = (wallet.Balance ?? 0) - transaction.Amount;
-                    }
-                    else if (transaction.Type == "Expense")
-                    {
-                        wallet.Balance = (wallet.Balance ?? 0) + transaction.Amount;
-                    }
-                    wallet.UpdatedAt = DateTime.Now;
-
+                    //  KHÔNG hoàn trả số dư ví - Giao dịch đã thực hiện không thể hoàn tác
+                    // Chỉ xóa bản ghi transaction
                     _context.Transactions.Remove(transaction);
                     _context.SaveChanges();
                     dbTransaction.Commit();
 
-                    return Json(new { success = true, message = "Đã xóa giao dịch và cập nhật số dư ví." });
+                    return Json(new { success = true, message = "Đã xóa giao dịch." });
                 }
                 catch (Exception ex)
                 {
@@ -281,7 +284,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 };
                 return Json(new { success = true, data = dto });
             }
-            
+
             return Json(new { success = false, message = "Không tìm thấy giao dịch." });
         }
 
@@ -304,7 +307,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 var existing = _context.Transactions
                     .Include(t => t.Wallet)
                     .FirstOrDefault(t => t.TransactionId == dto.TransactionId && t.UserId == userId);
-                
+
                 if (existing == null)
                 {
                     return Json(new { success = false, message = "Không tìm thấy giao dịch hoặc bạn không có quyền sửa." });
@@ -321,18 +324,20 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Vui lòng chọn danh mục và ví." });
                 }
 
-                // Kiểm tra Category và Wallet thuộc về user
+                // ✅ Kiểm tra Category thuộc về user và CHƯA BỊ XÓA
                 var categoryExists = _context.Categories
-                    .Any(c => c.CategoryId == dto.CategoryId && c.UserId == userId);
-                
+                    .Any(c => c.CategoryId == dto.CategoryId 
+                         && c.UserId == userId 
+                         && c.IsDelete == false);
+
                 if (!categoryExists)
                 {
-                    return Json(new { success = false, message = "Danh mục không tồn tại." });
+                    return Json(new { success = false, message = "Danh mục không tồn tại hoặc đã bị xóa." });
                 }
 
                 var newWallet = _context.Wallets
                     .FirstOrDefault(w => w.WalletId == dto.WalletId && w.UserId == userId);
-                
+
                 if (newWallet == null)
                 {
                     return Json(new { success = false, message = "Ví không tồn tại." });
@@ -344,21 +349,27 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Ngày giao dịch không hợp lệ." });
                 }
 
+                // ⚠️ LOGIC MỚI: CHỈ KIỂM TRA SỐ DƯ CHO GIAO DỊCH MỚI, KHÔNG HOÀN TRẢ
+                // Nếu là khoản chi, kiểm tra số dư ví hiện tại có đủ không
+                if (dto.Type == "Expense")
+                {
+                    var currentBalance = newWallet.Balance ?? 0;
+                    if (currentBalance < dto.Amount)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Số dư ví không đủ! Số dư hiện tại: {currentBalance:N0}đ"
+                        });
+                    }
+                }
+
                 using var dbTransaction = _context.Database.BeginTransaction();
                 try
                 {
-                    // Hoàn trả số dư cũ
-                    var oldWallet = existing.Wallet;
-                    if (existing.Type == "Income")
-                    {
-                        oldWallet.Balance = (oldWallet.Balance ?? 0) - existing.Amount;
-                    }
-                    else if (existing.Type == "Expense")
-                    {
-                        oldWallet.Balance = (oldWallet.Balance ?? 0) + existing.Amount;
-                    }
-
-                    // Cập nhật transaction
+                    // ❌ KHÔNG hoàn trả số dư cũ - Giao dịch đã thực hiện không thể hoàn tác
+                    
+                    // Cập nhật thông tin transaction
                     existing.Amount = dto.Amount;
                     existing.CategoryId = dto.CategoryId;
                     existing.WalletId = dto.WalletId;
@@ -367,7 +378,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     existing.Type = dto.Type;
                     existing.UpdatedAt = DateTime.Now;
 
-                    // Áp dụng số dư mới
+                    // ✅ CHỈ TRỪ/CỘNG SỐ DƯ MỚI (không hoàn trả cũ)
                     if (dto.Type == "Income")
                     {
                         newWallet.Balance = (newWallet.Balance ?? 0) + dto.Amount;
@@ -378,15 +389,13 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     }
                     newWallet.UpdatedAt = DateTime.Now;
 
-                    if (oldWallet.WalletId != newWallet.WalletId)
-                    {
-                        oldWallet.UpdatedAt = DateTime.Now;
-                    }
-
                     _context.SaveChanges();
                     dbTransaction.Commit();
 
-                    return Json(new { success = true, message = "Cập nhật giao dịch thành công!" });
+                    return Json(new { 
+                        success = true, 
+                        message = "Cập nhật giao dịch thành công! Số dư ví đã được điều chỉnh theo giao dịch mới." 
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -409,14 +418,47 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 return Json(new List<object>());
             }
 
+            // ✅ Chỉ trả về categories chưa bị xóa
             var categories = _context.Categories
                 .AsNoTracking()
-                .Where(c => c.Type == type && c.UserId == userId)
+                .Where(c => c.Type == type 
+                       && c.UserId == userId 
+                       && c.IsDelete == false)
                 .Select(c => new { c.CategoryId, c.CategoryName })
                 .OrderBy(c => c.CategoryName)
                 .ToList();
-            
+
             return Json(categories);
+        }
+
+        /// <summary>
+        /// API lấy số dư ví hiện tại
+        /// </summary>
+        [HttpGet("GetWalletBalance/{walletId}")]
+        public IActionResult GetWalletBalance(int walletId)
+        {
+            var userId = GetCurrentUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "Vui lòng đăng nhập lại." });
+            }
+
+            var wallet = _context.Wallets
+                .AsNoTracking()
+                .FirstOrDefault(w => w.WalletId == walletId && w.UserId == userId);
+
+            if (wallet == null)
+            {
+                return Json(new { success = false, message = "Ví không tồn tại." });
+            }
+
+            return Json(new
+            {
+                success = true,
+                walletId = wallet.WalletId,
+                walletName = wallet.WalletName,
+                balance = wallet.Balance ?? 0
+            });
         }
 
         /// <summary>

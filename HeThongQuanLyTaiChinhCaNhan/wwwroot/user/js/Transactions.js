@@ -1,5 +1,4 @@
-﻿// ==================== 1. SERVER DATA ====================
-
+﻿// ==================== TRANSACTIONS MANAGEMENT ====================
 var table;
 var modalInstance;
 
@@ -37,18 +36,15 @@ $(document).ready(function () {
     $('#transAmount').on('input', function (e) {
         var val = $(this).val();
         var numericValue = val.replace(/[^\d]/g, '');
-
         if (numericValue) {
             var formatted = parseInt(numericValue).toLocaleString('vi-VN');
             $(this).val(formatted);
         } else {
             $(this).val('');
         }
-
         $(this).data('numeric-value', numericValue ? parseInt(numericValue) : 0);
     });
 });
-
 
 function loadCategoriesByType(type) {
     if (typeof allCategories === 'undefined' || allCategories.length === 0) {
@@ -86,6 +82,7 @@ function openTransactionModal(mode, id = null) {
     var myModalEl = document.getElementById('transactionModal');
     modalInstance = new bootstrap.Modal(myModalEl);
     $('#transactionForm')[0].reset();
+    $('#transAmount').removeData('numeric-value');
 
     if (mode === 'add') {
         $('#modalTitle').text('Thêm Giao Dịch');
@@ -99,7 +96,9 @@ function openTransactionModal(mode, id = null) {
             if (res.success) {
                 var item = res.data;
                 $('#transID').val(item.transactionId);
-                $('#transAmount').val(item.amount);
+                var formattedAmount = parseInt(item.amount).toLocaleString('vi-VN');
+                $('#transAmount').val(formattedAmount);
+                $('#transAmount').data('numeric-value', item.amount);
                 $('#transDesc').val(item.description || '');
                 $('#transDate').val(item.transactionDate);
                 $('#transWallet').val(item.walletId);
@@ -131,13 +130,13 @@ $('#transactionForm').on('submit', function (e) {
     var isNew = id == '0' || id == '';
     var url = isNew ? '/User/Transactions/Create' : '/User/Transactions/Update';
 
-    var amount = $('#transAmount').val();
+    var amountNumeric = $('#transAmount').data('numeric-value');
     var categoryId = $('#transCategory').val();
     var walletId = $('#transWallet').val();
     var transDate = $('#transDate').val();
     var type = document.querySelector('input[name="transType"]:checked')?.value;
 
-    if (!amount || !categoryId || !walletId || !transDate || !type) {
+    if (!amountNumeric || !categoryId || !walletId || !transDate || !type) {
         Swal.fire({
             icon: 'warning',
             title: 'Thiếu thông tin',
@@ -146,7 +145,7 @@ $('#transactionForm').on('submit', function (e) {
         return;
     }
 
-    if (parseFloat(amount) <= 0) {
+    if (amountNumeric <= 0) {
         Swal.fire({
             icon: 'warning',
             title: 'Số tiền không hợp lệ',
@@ -155,9 +154,38 @@ $('#transactionForm').on('submit', function (e) {
         return;
     }
 
+    // ✅ CHỈ KIỂM TRA SỐ DƯ KHI THÊM MỚI GIAO DỊCH CHI
+    if (type === 'Expense' && isNew) {
+        $.get('/User/Transactions/GetWalletBalance/' + walletId, function (walletRes) {
+            if (walletRes.success) {
+                var currentBalance = walletRes.balance;
+                if (currentBalance < amountNumeric) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Số dư không đủ!',
+                        html: `<p>Số dư hiện tại: <strong>${currentBalance.toLocaleString('vi-VN')}đ</strong></p>
+                               <p>Số tiền cần: <strong>${amountNumeric.toLocaleString('vi-VN')}đ</strong></p>`,
+                        confirmButtonText: 'Đóng'
+                    });
+                    return;
+                }
+                submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type);
+            } else {
+                Swal.fire('Lỗi', walletRes.message || 'Không thể lấy thông tin ví', 'error');
+            }
+        }).fail(function () {
+            Swal.fire('Lỗi', 'Không thể kết nối server', 'error');
+        });
+    } else {
+        // Khoản thu hoặc Sửa giao dịch: Submit trực tiếp (backend sẽ kiểm tra)
+        submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type);
+    }
+});
+
+function submitTransaction(url, id, isNew, amountNumeric, categoryId, walletId, transDate, type) {
     var payload = {
         TransactionId: isNew ? 0 : parseInt(id),
-        Amount: parseFloat(amount),
+        Amount: parseFloat(amountNumeric),
         CategoryId: parseInt(categoryId),
         WalletId: parseInt(walletId),
         TransactionDate: transDate,
@@ -198,7 +226,7 @@ $('#transactionForm').on('submit', function (e) {
             Swal.fire('Lỗi', errorMsg, 'error');
         }
     });
-});
+}
 
 function deleteTransaction(id) {
     Swal.fire({
@@ -246,25 +274,17 @@ function applyFilter() {
         if (filterType) params.append('type', filterType);
         if (filterFromDate) params.append('fromDate', filterFromDate);
         if (filterToDate) params.append('toDate', filterToDate);
-
         window.location.href = '/User/Transactions?' + params.toString();
     } else if (filterType) {
-        // Chỉ filter type thì dùng jQuery để ẩn/hiện rows (đơn giản hơn DataTables filter)
         console.log('Applying client-side filter for type:', filterType);
-
-        // Show all rows first
         $('#tableTransaction tbody tr').show();
-
-        // Then hide rows that don't match
         $('#tableTransaction tbody tr').each(function () {
             var rowType = $(this).find('td[data-type]').attr('data-type');
             console.log('Row type:', rowType, 'Filter:', filterType);
-
             if (rowType && rowType !== filterType) {
                 $(this).hide();
             }
         });
-
         table.draw(false);
     } else {
         console.log('Clearing all filters - showing all rows');
@@ -275,19 +295,12 @@ function applyFilter() {
 
 function resetFilter() {
     console.log('Resetting filters');
-
     $('#filterWallet').val('');
     $('#filterType').val('');
     $('#filterFromDate').val('');
     $('#filterToDate').val('');
-
-    // Show all rows
     $('#tableTransaction tbody tr').show();
-
-    // Redraw table
     table.search('').columns().search('').draw();
-
-    // Remove URL parameters and reload
     window.history.pushState({}, '', '/User/Transactions');
     location.reload();
 }
