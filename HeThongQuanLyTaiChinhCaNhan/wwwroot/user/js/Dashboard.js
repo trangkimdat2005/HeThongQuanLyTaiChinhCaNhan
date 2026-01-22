@@ -3,10 +3,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Chỉ chạy nếu có element id="cashFlowChart"
     var ctx = document.getElementById("cashFlowChart");
     if (ctx) {
+        // Sử dụng dữ liệu từ View (được truyền từ Controller)
+        var labels = typeof chartLabels !== 'undefined' ? chartLabels : ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+        var incomeData = typeof chartIncomeData !== 'undefined' ? chartIncomeData : [0, 0, 0, 0, 0, 0, 0];
+        var expenseData = typeof chartExpenseData !== 'undefined' ? chartExpenseData : [0, 0, 0, 0, 0, 0, 0];
+
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"], // Các ngày trong tuần
+                labels: labels,
                 datasets: [{
                     label: "Thu Nhập",
                     tension: 0.3, // Độ cong
@@ -20,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     pointHoverBorderColor: "rgba(28, 200, 138, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
-                    data: [0, 15000000, 0, 0, 0, 200000, 0], // Dữ liệu giả (Lương về T3)
+                    data: incomeData,
                 },
                 {
                     label: "Chi Tiêu",
@@ -35,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     pointHoverBorderColor: "rgba(231, 74, 59, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
-                    data: [50000, 150000, 450000, 100000, 20000, 500000, 80000], // Dữ liệu giả ăn uống, xăng xe...
+                    data: expenseData,
                 }],
             },
             options: {
@@ -46,7 +51,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     y: {
                         grid: { color: "rgb(234, 236, 244)", drawBorder: false, borderDash: [2], zeroLineBorderDash: [2] },
                         ticks: {
-                            callback: function (value) { return value.toLocaleString('vi-VN') + 'đ'; }
+                            callback: function (value) { 
+                                return value.toLocaleString('vi-VN') + ' đ'; 
+                            }
                         }
                     }
                 },
@@ -77,7 +84,91 @@ function quickAddTransaction() {
         confirmButtonText: 'Đến trang Thêm Giao Dịch'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = '/user/transactions.html';
+            window.location.href = '/User/Transactions';
         }
     });
+}
+
+// 3. HÀM LỌC GIAO DỊCH THEO THỜI GIAN
+function filterTransactions(filterType) {
+    const rows = document.querySelectorAll('#transactionTableBody tr');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Tính toán ngày bắt đầu tuần (Thứ 2)
+    const weekStart = new Date(today);
+    const dayOfWeek = today.getDay();
+    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Nếu CN thì lùi 6 ngày, còn lại lùi (dayOfWeek - 1) ngày
+    weekStart.setDate(today.getDate() - diff);
+    
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const dateCell = row.querySelector('td:first-child');
+        if (!dateCell) return;
+        
+        const dateText = dateCell.textContent.trim();
+        const [day, month] = dateText.split('/').map(Number);
+        const currentYear = today.getFullYear();
+        const transDate = new Date(currentYear, month - 1, day);
+        transDate.setHours(0, 0, 0, 0);
+        
+        let shouldShow = false;
+        
+        switch(filterType) {
+            case 'all':
+                shouldShow = true;
+                break;
+            case 'today':
+                shouldShow = transDate.getTime() === today.getTime();
+                break;
+            case 'week':
+                shouldShow = transDate >= weekStart && transDate <= today;
+                break;
+        }
+        
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Hiển thị thông báo nếu không có giao dịch
+    const emptyRow = document.querySelector('#transactionTableBody .no-transactions-row');
+    if (emptyRow) {
+        emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
+    
+    // Cập nhật text button đang active
+    const filterButton = document.querySelector('.filter-dropdown-toggle');
+    const filterTexts = {
+        'all': 'Toàn bộ',
+        'today': 'Hôm nay',
+        'week': 'Tuần này'
+    };
+    
+    if (filterButton) {
+        filterButton.innerHTML = `<i class="fas fa-filter me-1 text-muted"></i> ${filterTexts[filterType] || 'Lọc'}`;
+    }
+    
+    // Toast thông báo
+    const toastTexts = {
+        'all': `Hiển thị tất cả ${visibleCount} giao dịch`,
+        'today': `Tìm thấy ${visibleCount} giao dịch hôm nay`,
+        'week': `Tìm thấy ${visibleCount} giao dịch tuần này`
+    };
+    
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: toastTexts[filterType],
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+    }
 }

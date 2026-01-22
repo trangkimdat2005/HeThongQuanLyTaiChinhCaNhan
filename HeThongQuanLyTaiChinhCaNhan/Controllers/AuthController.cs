@@ -55,9 +55,9 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
                     // 3. Tạo danh sách thông tin (Claims)
                     var claims = new List<Claim>
                     {
+                        new Claim(ClaimTypes.NameIdentifier, user.UserId),
                         new Claim(ClaimTypes.Name, user.FullName),
                         new Claim(ClaimTypes.Email, user.Email),
-                        new Claim("UserId", user.UserId.ToString()),
                         new Claim(ClaimTypes.Role, user.Role) // Quan trọng để phân quyền
                     };
 
