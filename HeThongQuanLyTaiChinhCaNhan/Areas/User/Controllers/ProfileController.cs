@@ -81,6 +81,13 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
 
                 if (!string.IsNullOrEmpty(dob) && DateOnly.TryParse(dob, out DateOnly parsedDob))
                 {
+                    var age = DateTime.Today.Year - parsedDob.Year;
+                    if (parsedDob > DateOnly.FromDateTime(DateTime.Today).AddYears(-age)) age--;
+
+                    if (age < 16)
+                    {
+                        return Json(new { success = false, message = "Bạn phải từ 16 tuổi trở lên" });
+                    }
                     user.DateOfBirth = parsedDob;
                 }
 

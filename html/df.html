@@ -1,380 +1,85 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Finance Dashboard Overview</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#135bec",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#101622",
-                    },
-                    fontFamily: {
-                        "display": ["Inter"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .active-nav {
-            background-color: #282e39;
-        }
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Cửa hàng Laptop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .product-card { border: 1px solid #ddd; margin-bottom: 20px; padding: 10px; border-radius: 5px; }
+        .product-img { width: 100%; height: 200px; object-fit: cover; }
+        .sidebar-item { cursor: pointer; padding: 10px; border-bottom: 1px solid #eee; }
+        .sidebar-item:hover { background-color: #f8f9fa; color: blue; }
+        footer { background: #333; color: white; padding: 20px 0; margin-top: 30px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white transition-colors duration-200">
-<div class="flex h-screen overflow-hidden">
-<!-- Sidebar Navigation -->
-<aside class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-[#282e39] bg-white dark:bg-background-dark flex flex-col justify-between p-4">
-<div class="flex flex-col gap-8">
-<!-- Logo/Brand -->
-<div class="flex items-center gap-3 px-2">
-<div class="bg-primary rounded-lg p-1.5 flex items-center justify-center">
-<svg class="text-white size-6" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-<path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
-</svg>
-</div>
-<div class="flex flex-col">
-<h1 class="text-slate-900 dark:text-white text-base font-bold leading-none">FinancePro</h1>
-<p class="text-slate-500 dark:text-[#9da6b9] text-[10px] font-medium tracking-wider uppercase mt-1">Personal Wealth</p>
-</div>
-</div>
-<!-- Nav Links -->
-<nav class="flex flex-col gap-1">
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav text-white" href="#">
-<span class="material-symbols-outlined text-[22px]">dashboard</span>
-<span class="text-sm font-medium">Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-100 dark:hover:bg-[#282e39] transition-colors" href="#">
-<span class="material-symbols-outlined text-[22px]">receipt_long</span>
-<span class="text-sm font-medium">Transactions</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-100 dark:hover:bg-[#282e39] transition-colors" href="#">
-<span class="material-symbols-outlined text-[22px]">account_balance_wallet</span>
-<span class="text-sm font-medium">Budgets</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-100 dark:hover:bg-[#282e39] transition-colors" href="#">
-<span class="material-symbols-outlined text-[22px]">bar_chart</span>
-<span class="text-sm font-medium">Reports</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-100 dark:hover:bg-[#282e39] transition-colors" href="#">
-<span class="material-symbols-outlined text-[22px]">credit_card</span>
-<span class="text-sm font-medium">Accounts</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-[#9da6b9] hover:bg-slate-100 dark:hover:bg-[#282e39] transition-colors" href="#">
-<span class="material-symbols-outlined text-[22px]">settings</span>
-<span class="text-sm font-medium">Settings</span>
-</a>
-</nav>
-</div>
-<!-- Sidebar Footer -->
-<div class="flex flex-col gap-4">
-<div class="bg-primary/10 dark:bg-primary/5 p-4 rounded-xl border border-primary/20">
-<p class="text-xs font-semibold text-primary mb-1">Savings Goal</p>
-<div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mb-2">
-<span>New House</span>
-<span>75%</span>
-</div>
-<div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-<div class="bg-primary h-full w-3/4"></div>
-</div>
-</div>
-<button class="w-full flex items-center justify-center gap-2 bg-primary text-white text-sm font-bold py-3 rounded-lg hover:bg-blue-600 transition-colors">
-<span class="material-symbols-outlined text-sm">add</span>
-<span>Add Transaction</span>
-</button>
-</div>
-</aside>
-<!-- Main Content Area -->
-<main class="flex-1 flex flex-col overflow-y-auto">
-<!-- Top Navigation -->
-<header class="flex items-center justify-between border-b border-slate-200 dark:border-[#282e39] px-8 py-4 bg-white dark:bg-background-dark sticky top-0 z-10">
-<div class="flex items-center gap-6">
-<h2 class="text-xl font-bold tracking-tight">Overview</h2>
-<div class="relative w-64">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#9da6b9] text-[20px]">search</span>
-<input class="w-full bg-slate-100 dark:bg-[#282e39] border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white placeholder-slate-400" placeholder="Search transactions..." type="text"/>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 text-slate-500 dark:text-[#9da6b9] hover:bg-slate-100 dark:hover:bg-[#282e39] rounded-lg transition-colors relative">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 border-2 border-white dark:border-background-dark rounded-full"></span>
-</button>
-<div class="h-8 w-px bg-slate-200 dark:border-[#282e39]"></div>
-<div class="flex items-center gap-3">
-<div class="text-right hidden sm:block">
-<p class="text-sm font-semibold leading-none">Alex Rivera</p>
-<p class="text-[11px] text-[#9da6b9] mt-1">Premium Member</p>
-</div>
-<div class="size-10 rounded-full bg-center bg-cover border-2 border-primary/20" data-alt="User profile photo of Alex Rivera" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA_8J20BtAs2Z584E3ipmjRW0BJ5GYGm-vE5-GIZzvYTA0fXzqFGDAK9p97dVR3K5qc-9c71oLyQivuMaEC0Clu45M2D-0c4ZLtsDCAnjPrCgLnCGBYH4aS4z1IUvC8OpV6IJl5V_kBSxh0RKbAdplvJbq0wEtSo-0tXmiH1019rC81hEfuCr9a9d1EI6cwBFy9C8oKdUx-2T7ie4t_ZMBJymn4JL16GjjaQrtoX9X-rVaZZdL-RcyQ-5nzp0eAk0UyjSFZydgWKO4");'></div>
-</div>
-</div>
-</header>
-<div class="p-8 space-y-8">
-<!-- Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<div class="bg-white dark:bg-background-dark border border-slate-200 dark:border-[#3b4354] p-6 rounded-xl flex flex-col gap-2 shadow-sm">
-<div class="flex justify-between items-start">
-<p class="text-slate-500 dark:text-[#9da6b9] text-sm font-medium">Total Balance</p>
-<span class="material-symbols-outlined text-primary text-[24px]">account_balance</span>
-</div>
-<p class="text-2xl font-bold">$45,250.00</p>
-<div class="flex items-center gap-1.5">
-<span class="text-emerald-500 font-bold text-xs">+2.5%</span>
-<span class="text-slate-400 dark:text-[#9da6b9] text-[10px]">from last month</span>
-</div>
-</div>
-<div class="bg-white dark:bg-background-dark border border-slate-200 dark:border-[#3b4354] p-6 rounded-xl flex flex-col gap-2 shadow-sm">
-<div class="flex justify-between items-start">
-<p class="text-slate-500 dark:text-[#9da6b9] text-sm font-medium">Monthly Income</p>
-<span class="material-symbols-outlined text-emerald-500 text-[24px]">trending_up</span>
-</div>
-<p class="text-2xl font-bold">$8,400.00</p>
-<div class="flex items-center gap-1.5">
-<span class="text-emerald-500 font-bold text-xs">+4.1%</span>
-<span class="text-slate-400 dark:text-[#9da6b9] text-[10px]">vs previous avg</span>
-</div>
-</div>
-<div class="bg-white dark:bg-background-dark border border-slate-200 dark:border-[#3b4354] p-6 rounded-xl flex flex-col gap-2 shadow-sm">
-<div class="flex justify-between items-start">
-<p class="text-slate-500 dark:text-[#9da6b9] text-sm font-medium">Monthly Expenses</p>
-<span class="material-symbols-outlined text-red-500 text-[24px]">trending_down</span>
-</div>
-<p class="text-2xl font-bold">$3,200.00</p>
-<div class="flex items-center gap-1.5">
-<span class="text-red-500 font-bold text-xs">-1.2%</span>
-<span class="text-slate-400 dark:text-[#9da6b9] text-[10px]">from last month</span>
-</div>
-</div>
-</div>
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-<!-- Main Chart Area -->
-<div class="xl:col-span-2 bg-white dark:bg-background-dark border border-slate-200 dark:border-[#3b4354] rounded-xl p-6 shadow-sm">
-<div class="flex items-center justify-between mb-8">
-<div>
-<h3 class="text-lg font-bold">Income vs Expenses</h3>
-<p class="text-sm text-slate-500 dark:text-[#9da6b9]">Jan 2024 - Jun 2024</p>
-</div>
-<div class="flex gap-4">
-<div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-primary"></span>
-<span class="text-xs font-medium">Income</span>
-</div>
-<div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-<span class="text-xs font-medium">Expenses</span>
-</div>
-</div>
-</div>
-<div class="h-[280px] w-full relative">
-<!-- SVG Chart Simulation -->
-<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 250">
-<!-- Grid Lines -->
-<line class="text-slate-100 dark:text-[#282e39]" stroke="currentColor" stroke-dasharray="4" x1="0" x2="800" y1="50" y2="50"></line>
-<line class="text-slate-100 dark:text-[#282e39]" stroke="currentColor" stroke-dasharray="4" x1="0" x2="800" y1="100" y2="100"></line>
-<line class="text-slate-100 dark:text-[#282e39]" stroke="currentColor" stroke-dasharray="4" x1="0" x2="800" y1="150" y2="150"></line>
-<line class="text-slate-100 dark:text-[#282e39]" stroke="currentColor" stroke-dasharray="4" x1="0" x2="800" y1="200" y2="200"></line>
-<!-- Income Line Area (Primary) -->
-<path d="M0 200 C 100 180, 200 120, 300 140 C 400 160, 500 80, 600 100 C 700 120, 800 60, 800 60 V 250 H 0 Z" fill="url(#incomeGradient)" fill-opacity="0.1"></path>
-<path d="M0 200 C 100 180, 200 120, 300 140 C 400 160, 500 80, 600 100 C 700 120, 800 60, 800 60" fill="none" stroke="#135bec" stroke-width="3"></path>
-<!-- Expense Line (Secondary) -->
-<path d="M0 220 C 100 210, 200 180, 300 190 C 400 200, 500 150, 600 170 C 700 180, 800 140, 800 140" fill="none" stroke="#94a3b8" stroke-dasharray="4" stroke-width="2"></path>
-<defs>
-<lineargradient id="incomeGradient" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#135bec"></stop>
-<stop offset="100%" stop-color="#135bec" stop-opacity="0"></stop>
-</lineargradient>
-</defs>
-</svg>
-<div class="flex justify-between mt-4 px-2">
-<p class="text-[11px] font-bold text-slate-400 uppercase">Jan</p>
-<p class="text-[11px] font-bold text-slate-400 uppercase">Feb</p>
-<p class="text-[11px] font-bold text-slate-400 uppercase">Mar</p>
-<p class="text-[11px] font-bold text-slate-400 uppercase">Apr</p>
-<p class="text-[11px] font-bold text-slate-400 uppercase">May</p>
-<p class="text-[11px] font-bold text-slate-400 uppercase">Jun</p>
-</div>
-</div>
-</div>
-<!-- Categories Doughnut -->
-<div class="bg-white dark:bg-background-dark border border-slate-200 dark:border-[#3b4354] rounded-xl p-6 shadow-sm">
-<div class="flex items-center justify-between mb-6">
-<h3 class="text-lg font-bold">Spending Categories</h3>
-<button class="text-primary text-xs font-bold hover:underline">View All</button>
-</div>
-<div class="relative flex justify-center py-4">
-<!-- Simple Circular Visualization -->
-<div class="size-48 rounded-full border-[16px] border-slate-100 dark:border-slate-800 relative flex items-center justify-center">
-<div class="absolute inset-0 rounded-full border-[16px] border-transparent border-t-primary border-r-primary rotate-45"></div>
-<div class="absolute inset-0 rounded-full border-[16px] border-transparent border-l-emerald-500 -rotate-12"></div>
-<div class="flex flex-col items-center">
-<span class="text-2xl font-bold">$3,200</span>
-<span class="text-[10px] text-slate-500 dark:text-[#9da6b9] uppercase font-bold">Monthly</span>
-</div>
-</div>
-</div>
-<div class="space-y-4 mt-6">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-3 h-3 rounded-full bg-primary"></div>
-<span class="text-sm font-medium">Rent &amp; Housing</span>
-</div>
-<span class="text-sm font-bold">$1,120</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-<span class="text-sm font-medium">Food &amp; Groceries</span>
-</div>
-<span class="text-sm font-bold">$480</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-3 h-3 rounded-full bg-amber-500"></div>
-<span class="text-sm font-medium">Entertainment</span>
-</div>
-<span class="text-sm font-bold">$320</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-<span class="text-sm font-medium">Others</span>
-</div>
-<span class="text-sm font-bold">$1,280</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Recent Transactions Table -->
-<div class="bg-white dark:bg-background-dark border border-slate-200 dark:border-[#3b4354] rounded-xl overflow-hidden shadow-sm">
-<div class="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-[#282e39]">
-<h3 class="text-lg font-bold">Recent Transactions</h3>
-<div class="flex gap-2">
-<button class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-[#282e39] rounded-lg text-xs font-bold transition-colors hover:bg-slate-200 dark:hover:bg-[#343b49]">
-<span class="material-symbols-outlined text-[16px]">filter_list</span>
-<span>Filter</span>
-</button>
-<button class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-[#282e39] rounded-lg text-xs font-bold transition-colors hover:bg-slate-200 dark:hover:bg-[#343b49]">
-<span class="material-symbols-outlined text-[16px]">download</span>
-<span>Export</span>
-</button>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead>
-<tr class="text-[11px] font-bold uppercase text-slate-500 dark:text-[#9da6b9] border-b border-slate-100 dark:border-[#282e39]">
-<th class="px-6 py-4">Transaction</th>
-<th class="px-6 py-4">Category</th>
-<th class="px-6 py-4">Date</th>
-<th class="px-6 py-4">Amount</th>
-<th class="px-6 py-4 text-right">Status</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-100 dark:divide-[#282e39]">
-<tr class="hover:bg-slate-50/50 dark:hover:bg-[#1a202c] transition-colors cursor-pointer group">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
-</div>
-<div class="flex flex-col">
-<span class="text-sm font-semibold">Whole Foods Market</span>
-<span class="text-[11px] text-slate-500 dark:text-[#9da6b9]">Visa Card • 4421</span>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-500">Food</span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">June 24, 2024</td>
-<td class="px-6 py-4 font-bold text-sm">-$124.50</td>
-<td class="px-6 py-4 text-right">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-[#282e39] text-slate-700 dark:text-white">Completed</span>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-[#1a202c] transition-colors cursor-pointer group">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="size-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-<span class="material-symbols-outlined text-[20px]">payments</span>
-</div>
-<div class="flex flex-col">
-<span class="text-sm font-semibold">Salary Deposit</span>
-<span class="text-[11px] text-slate-500 dark:text-[#9da6b9]">JP Morgan Chase</span>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-primary/10 text-primary">Income</span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">June 21, 2024</td>
-<td class="px-6 py-4 font-bold text-sm text-emerald-500">+$4,200.00</td>
-<td class="px-6 py-4 text-right">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-[#282e39] text-slate-700 dark:text-white">Completed</span>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-[#1a202c] transition-colors cursor-pointer group">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="size-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
-<span class="material-symbols-outlined text-[20px]">tv</span>
-</div>
-<div class="flex flex-col">
-<span class="text-sm font-semibold">Netflix Subscription</span>
-<span class="text-[11px] text-slate-500 dark:text-[#9da6b9]">Amex • 1009</span>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-500">Entertainment</span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">June 18, 2024</td>
-<td class="px-6 py-4 font-bold text-sm">-$19.99</td>
-<td class="px-6 py-4 text-right">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-500">Pending</span>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 dark:hover:bg-[#1a202c] transition-colors cursor-pointer group">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="size-9 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
-<span class="material-symbols-outlined text-[20px]">apartment</span>
-</div>
-<div class="flex flex-col">
-<span class="text-sm font-semibold">Monthly Rent</span>
-<span class="text-[11px] text-slate-500 dark:text-[#9da6b9]">Direct Debit</span>
-</div>
-</div>
-</td>
-<td class="px-6 py-4">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-500/10 text-slate-500">Housing</span>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">June 01, 2024</td>
-<td class="px-6 py-4 font-bold text-sm">-$1,120.00</td>
-<td class="px-6 py-4 text-right">
-<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-[#282e39] text-slate-700 dark:text-white">Completed</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</main>
-</div>
-</body></html>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Laptop Store</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Quản lý</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-light p-4 mb-4 text-center">
+        <h1>CHÀO MỪNG ĐẾN VỚI CỬA HÀNG</h1>
+        <p class="text-danger fw-bold">Sinh viên thực hiện: [Điền Họ Tên - MSSV Vào Đây]</p>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        Danh mục sản phẩm
+                    </div>
+                    <div class="list-group list-group-flush" id="menu-loai">
+                        <a href="#" class="list-group-item sidebar-item">Laptop Gaming (Mẫu)</a>
+                        <a href="#" class="list-group-item sidebar-item">Macbook (Mẫu)</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <h3 class="mb-3">Sản phẩm nổi bật</h3>
+                
+                <div class="row" id="content-product">
+                    <div class="col-md-4">
+                        <div class="product-card">
+                            <img src="https://via.placeholder.com/300" class="product-img" alt="Laptop">
+                            <h5 class="mt-2">Laptop Mẫu 1</h5>
+                            <p class="text-danger fw-bold">20.000.000 đ</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                        </div>
+                    </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center">
+        <div class="container">
+            <p>&copy; 2024 - Đề thi thực hành .NET Core</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Phần Script cho câu 3 (AJAX) sẽ viết ở đây
+        $(document).ready(function() {
+            console.log("Ready!");
+        });
+    </script>
+</body>
+</html>

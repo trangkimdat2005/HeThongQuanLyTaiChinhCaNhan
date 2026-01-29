@@ -97,6 +97,32 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home", new { area = "" });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LogoutUser()
+        {
+            try
+            {
+                // Kiểm tra trạng thái trước khi SignOut để tránh lỗi External Code
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                }
+
+                HttpContext.Session.Clear();
+
+                // Trả về URL tuyệt đối để AJAX chuyển hướng chính xác
+                var redirectUrl = Url.Action("Index", "Home", new { area = "" });
+
+                return Json(new { status = "SUCCESS", redirectUrl });
+            }
+            catch (Exception ex)
+            {
+                // Trả về status code 500 để AJAX rơi vào nhánh 'error' nếu có lỗi thật sự
+                return StatusCode(500, new { status = "error", message = ex.Message });
+            }
+        }
         // 1. XỬ LÝ YÊU CẦU QUÊN MẬT KHẨU (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
