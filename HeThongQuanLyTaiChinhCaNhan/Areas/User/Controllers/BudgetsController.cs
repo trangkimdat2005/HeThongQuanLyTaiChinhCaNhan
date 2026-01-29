@@ -35,10 +35,11 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                 return RedirectToAction("Login", "Auth", new { area = "" });
             }
 
-            // Load categories (chỉ Expense)
             ViewBag.categories = _context.Categories
                 .AsNoTracking()
-                .Where(c => c.UserId == userId && c.Type == "Expense")
+                .Where(c => c.UserId == userId 
+                       && c.Type == "Expense" 
+                       && c.IsDelete == false)
                 .OrderBy(c => c.CategoryName)
                 .ToList();
 
@@ -116,14 +117,15 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Ngày kết thúc phải sau ngày bắt đầu." });
                 }
 
-                // Kiểm tra category có thuộc về user không
                 var category = _context.Categories
                     .AsNoTracking()
-                    .FirstOrDefault(c => c.CategoryId == dto.CategoryId && c.UserId == userId);
+                    .FirstOrDefault(c => c.CategoryId == dto.CategoryId 
+                                    && c.UserId == userId
+                                    && c.IsDelete == false);
 
                 if (category == null)
                 {
-                    return Json(new { success = false, message = "Danh mục không tồn tại hoặc không thuộc về bạn." });
+                    return Json(new { success = false, message = "Danh mục không tồn tại!" });
                 }
 
                 if (category.Type != "Expense")
@@ -256,14 +258,16 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new { success = false, message = "Ngày kết thúc phải sau ngày bắt đầu." });
                 }
 
-                // Kiểm tra category thuộc về user
+                // ✅ Kiểm tra category thuộc về user và CHƯA BỊ XÓA
                 var category = _context.Categories
                     .AsNoTracking()
-                    .FirstOrDefault(c => c.CategoryId == dto.CategoryId && c.UserId == userId);
+                    .FirstOrDefault(c => c.CategoryId == dto.CategoryId 
+                                    && c.UserId == userId
+                                    && c.IsDelete == false);
 
                 if (category == null)
                 {
-                    return Json(new { success = false, message = "Danh mục không tồn tại hoặc không thuộc về bạn." });
+                    return Json(new { success = false, message = "Danh mục không tồn tại" });
                 }
 
                 if (category.Type != "Expense")

@@ -349,7 +349,7 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
                     return Json(new
                     {
                         success = false,
-                        message = "Không thể xóa mục tiêu này vì đang có lịch sử nạp tiền. Vui lòng xóa các khoản nạp trước."
+                        message = "Không thể xóa mục tiêu này vì đang có lịch sử nạp tiền."
                     });
                 }
 

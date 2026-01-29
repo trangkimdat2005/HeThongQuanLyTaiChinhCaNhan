@@ -26,7 +26,7 @@
     var highSpendingBudgets = new List<dynamic>();
     foreach (dynamic item in budgetData)
     {
-        if ((int)item.Percentage >= 85)
+        if ((int)item.Percentage > 100)
         {
             highSpendingBudgets.Add(item);
         }
@@ -38,6 +38,7 @@
         var budget = item.Budget as Budget;
         var spent = (decimal)item.SpentAmount;
         var remaining = budget.BudgetAmount - spent;
+        var overAmount = Math.Abs(remaining); 
 
         <div class="row mb-4">
             <div class="col-12">
@@ -48,9 +49,9 @@
                     <div class="flex-grow-1">
                         <h6 class="alert-heading fw-bold mb-1 text-dark">⚠️ Cảnh báo chi tiêu!</h6>
                         <p class="mb-0 text-muted">
-                            Bạn đã chi <b class="text-danger">@spent.ToString("N0")đ (@item.Percentage%)</b> cho
+                            Bạn đã chi <b class="text-danger">@spent.ToString("N0")đ </b> cho
                             <b class="text-dark">@(budget.Category?.CategoryName ?? "N/A")</b>.
-                            Còn lại: <b class="text-success">@remaining.ToString("N0")đ</b>
+                            Vượt quá <b class="text-danger">@overAmount.ToString("N0")đ</b> hạn mức chi tiêu!
                         </p>
                     </div>
                 </div>
@@ -214,7 +215,7 @@
                             <option value="">-- Chọn danh mục --</option>
                             @if (categoryList != null && categoryList.Any())
                             {
-                                foreach (var cat in categoryList)
+                                foreach (var cat in categoryList.Where(c => c.IsDelete == false))
                                 {
                                     <option value="@cat.CategoryId" data-icon="@cat.Icon" data-color="@cat.Color">
                                         @cat.CategoryName
@@ -228,7 +229,7 @@
                         </select>
                         <div class="form-text">
                             <i class="fas fa-info-circle me-1"></i>
-                            Chỉ áp dụng cho các khoản Chi tiêu (Expense).
+                            Chỉ áp dụng cho các khoản Chi tiêu.
                         </div>
                     </div>
 
