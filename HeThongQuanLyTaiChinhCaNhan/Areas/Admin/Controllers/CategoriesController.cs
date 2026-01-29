@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore; // Cần thiết để dùng ToList()
+using System.Security.Claims;
 
 namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
 {
@@ -17,10 +18,20 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
             _context = context;
         }
 
+        // Helper method để lấy UserId
+        private string? GetCurrentUserId()
+        {
+            return User.FindFirst("UserId")?.Value ?? 
+                   User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
         public IActionResult Index()
         {
-            // Lấy danh sách danh mục từ DB
-            var categories = _context.Categories.ToList();
+            // Lấy danh sách danh mục từ DB (chỉ lấy chưa xóa)
+            var categories = _context.Categories
+                .Where(c => c.IsDelete == false || c.IsDelete == null)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToList();
 
             // Truyền sang View bằng ViewBag
             ViewBag.Categories = categories;
@@ -58,17 +69,21 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
             {
                 try
                 {
-                    // 4. Kiểm tra trùng tên (Trong phạm vi của User đó thôi)
+                    // 4. Kiểm tra trùng tên (Trong phạm vi của User đó thôi, chỉ kiểm tra các category chưa xóa)
                     // Lưu ý: UserId trong DB là string nên so sánh bình thường
                     bool exists = await _context.Categories.AnyAsync(c =>
                         c.CategoryName == model.CategoryName &&
                         c.Type == model.Type &&
-                        c.UserId == userId);
+                        c.UserId == userId &&
+                        (c.IsDelete == false || c.IsDelete == null));
 
                     if (exists)
                     {
                         return Json(new { success = false, message = "Tên danh mục này đã tồn tại!" });
                     }
+
+                    model.CreatedAt = DateTime.Now;
+                    model.IsDelete = false; // Set mặc định
 
                     _context.Add(model);
                     await _context.SaveChangesAsync();
@@ -94,7 +109,10 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Where(c => c.CategoryId == id && (c.IsDelete == false || c.IsDelete == null))
+                .FirstOrDefaultAsync();
+            
             if (category == null)
             {
                 return NotFound(); // Hoặc chuyển hướng báo lỗi
@@ -141,12 +159,13 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
                 try
                 {
                     // Kiểm tra trùng tên (Trừ chính nó ra: c.CategoryId != id)
-                    // Và phải check đúng User đó
+                    // Và phải check đúng User đó, chỉ kiểm tra các category chưa xóa
                     bool exists = await _context.Categories.AnyAsync(c =>
                         c.CategoryName == model.CategoryName &&
                         c.Type == model.Type &&
                         c.UserId == userId &&
-                        c.CategoryId != id);
+                        c.CategoryId != id &&
+                        (c.IsDelete == false || c.IsDelete == null));
 
                     if (exists)
                     {
@@ -176,25 +195,16 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            // 1. Lấy UserId hiện tại
-            var userId = User.FindFirst("UserId")?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
-            }
-
-            // 2. Tìm danh mục (Phải đúng ID và đúng UserId của người đó)
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(c => c.CategoryId == id && c.UserId == userId);
-
-            if (category == null)
-            {
-                return Json(new { success = false, message = "Không tìm thấy danh mục hoặc bạn không có quyền xóa." });
-            }
+            var category = await _context.Categories.FindAsync(id);
+            
+            if (category == null || category.IsDelete == true)
+                return Json(new { success = false, message = "Danh mục không tồn tại." });
 
             try
             {
-                _context.Categories.Remove(category);
+                // SOFT DELETE: Chỉ đánh dấu IsDelete = true
+                category.IsDelete = true;
+                _context.Update(category);
                 await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "Xóa thành công!" });
             }

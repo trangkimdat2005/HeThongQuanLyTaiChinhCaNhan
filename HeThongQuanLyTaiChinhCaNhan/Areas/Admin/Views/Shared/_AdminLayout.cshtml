@@ -18,7 +18,7 @@
 </head>
 <body>
 
-    <div class="d-flex" id="wrapper">
+    <div class="d-flex" id="wrapper">a
         <div id="sidebar-wrapper">
             <div class="sidebar-heading text-uppercase">
                 <i class="fas fa-coins text-primary me-2"></i> QLTC Admin
@@ -95,14 +95,19 @@
             </nav>
 
             <div class="container-fluid p-4" id="main-content">
+                <!-- Loading Indicator -->
+                <div id="ajax-loader" style="display: none; text-align: center; padding: 50px;">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải nội dung...</p>
+                </div>
 
-                @RenderBody()
-
+                <!-- Content Container -->
+                <div id="dynamic-content">
+                    @RenderBody()
+                </div>
             </div>
-
-            <footer class="bg-white p-3 text-center text-muted small border-top mt-auto">
-                &copy; 2026 Hệ Thống Quản Lý Tài Chính. All rights reserved.
-            </footer>
         </div>
     </div>
 

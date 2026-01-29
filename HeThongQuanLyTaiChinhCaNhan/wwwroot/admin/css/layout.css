@@ -46,7 +46,8 @@ body {
     }
 
     /* Class active để đánh dấu đang ở trang nào */
-    .list-group-item.active-menu {
+    .list-group-item.active-menu,
+    .list-group-item.active {
         background-color: #2c3034;
         color: #3b7ddd; /* Màu xanh nổi bật */
         border-left: 4px solid #3b7ddd;
@@ -90,3 +91,80 @@ body {
         margin-left: 0;
     }
 }
+
+/* ========================================== */
+/* AJAX NAVIGATION STYLES */
+/* ========================================== */
+
+/* Loading Indicator Animation */
+#ajax-loader {
+    position: relative;
+    z-index: 999;
+}
+
+#ajax-loader .spinner-border {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Content Fade Transition */
+#dynamic-content {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Smooth Content Loading State */
+.loading-content {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Active Link Highlight */
+.ajax-link {
+    cursor: pointer;
+    position: relative;
+}
+
+.ajax-link.active {
+    position: relative;
+}
+
+.ajax-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #3b7ddd 0%, #2c5cb8 100%);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 4px;
+        opacity: 1;
+    }
+}
+
+/* Pulse Effect for Loading */
+.pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
