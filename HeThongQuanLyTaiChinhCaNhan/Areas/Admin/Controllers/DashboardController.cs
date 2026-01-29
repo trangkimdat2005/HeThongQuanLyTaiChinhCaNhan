@@ -32,24 +32,29 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
 
             // -------------------------------------
 
-            // 1. Lấy số liệu tổng quan
-            var totalUsers = await _context.Users.CountAsync();
+            // 1. Lấy số liệu tổng quan (chỉ đếm users chưa xóa)
+            var totalUsers = await _context.Users
+                .CountAsync(u => u.IsDelete == false || u.IsDelete == null);
 
-            // SỬA: Dùng startOfMonthDateOnly
+            // SỬA: Dùng startOfMonthDateOnly và filter IsDelete
             var newTransactions = await _context.Transactions
-                .Where(t => t.TransactionDate >= startOfMonthDateOnly)
+                .Where(t => t.TransactionDate >= startOfMonthDateOnly 
+                    && (t.IsDelete == false || t.IsDelete == null))
                 .ToListAsync();
 
-            // SỬA: Dùng startOfMonthDateTime
+            // SỬA: Dùng startOfMonthDateTime và filter IsDelete
             var newUsersMonth = await _context.Users
-                .CountAsync(u => u.CreatedAt >= startOfMonthDateTime);
+                .CountAsync(u => u.CreatedAt >= startOfMonthDateTime 
+                    && (u.IsDelete == false || u.IsDelete == null));
 
-            // SỬA: Dùng todayDateTime
+            // SỬA: Dùng todayDateTime và filter IsDelete
             var newUsersToday = await _context.Users
-                .CountAsync(u => u.CreatedAt >= todayDateTime);
+                .CountAsync(u => u.CreatedAt >= todayDateTime 
+                    && (u.IsDelete == false || u.IsDelete == null));
 
             var pendingTickets = await _context.Tickets
-                .CountAsync(t => t.Status == "Open" || t.Status == "Pending");
+                .CountAsync(t => (t.Status == "Open" || t.Status == "Pending") 
+                    && (t.IsDelete == false || t.IsDelete == null));
 
             // 2. Tính toán Biểu đồ Tăng trưởng User (6 tháng gần nhất)
             var growthLabels = new List<string>();
@@ -62,7 +67,9 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
                 var start = new DateTime(month.Year, month.Month, 1);
                 var end = start.AddMonths(1);
 
-                var count = await _context.Users.CountAsync(u => u.CreatedAt < end);
+                var count = await _context.Users
+                    .CountAsync(u => u.CreatedAt < end 
+                        && (u.IsDelete == false || u.IsDelete == null));
 
                 growthLabels.Add($"Tháng {month.Month}");
                 growthData.Add(count);
@@ -72,8 +79,9 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.Admin.Controllers
             var totalIncome = newTransactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
             var totalExpense = newTransactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
 
-            // 4. Lấy danh sách 5 User mới nhất
+            // 4. Lấy danh sách 5 User mới nhất (chỉ lấy chưa xóa)
             var recentUsers = await _context.Users
+                .Where(u => u.IsDelete == false || u.IsDelete == null)
                 .OrderByDescending(u => u.CreatedAt)
                 .Take(5)
                 .ToListAsync();

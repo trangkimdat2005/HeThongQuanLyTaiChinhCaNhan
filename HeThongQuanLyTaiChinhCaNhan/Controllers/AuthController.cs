@@ -39,52 +39,108 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
 
         // POST: Xử lý Login
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model)
         {
             if (ModelState.IsValid)
             {
-                // 1. Mã hóa mật khẩu người dùng nhập vào để so sánh
-                string hashedPassword = PasswordHelper.HashPassword(model.Password);
-
-                // 2. Tìm user trong DB (So sánh Email và Mật khẩu ĐÃ MÃ HÓA)
-                var user = await context.Users
-                    .FirstOrDefaultAsync(u => u.Email == model.Email && u.PasswordHash == hashedPassword);
-
-                if (user != null)
+                // ✅ FIX #4: RATE LIMITING - Prevent brute force
+                var rateLimitKey = $"LOGIN_FAIL_{model.Email}";
+                if (_cache.TryGetValue(rateLimitKey, out int failedAttempts))
                 {
-                    // 3. Tạo danh sách thông tin (Claims)
-                    var claims = new List<Claim>
+                    if (failedAttempts >= 5)
                     {
-                        new Claim(ClaimTypes.NameIdentifier, user.UserId),
-                        new Claim(ClaimTypes.Name, user.FullName),
-                        new Claim(ClaimTypes.Email, user.Email),
-                        new Claim(ClaimTypes.Role, user.Role) // Quan trọng để phân quyền
-                    };
-
-                    // 4. Tạo Identity
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-                    // 5. Ghi Cookie (Đăng nhập thành công)
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
-                    // 6. Điều hướng dựa trên Role
-                    if (user.Role == "Admin")
-                    {
-                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
-                    }
-                    else
-                    {
-                        return RedirectToAction("Index", "Dashboard", new { area = "User" });
+                        ModelState.AddModelError("", "Tài khoản tạm khóa do đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.");
+                        return View(model);
                     }
                 }
 
-                // Nếu không tìm thấy user hoặc sai mật khẩu
-                ModelState.AddModelError("", "Email hoặc Mật khẩu không đúng!");
+                // 1. Sanitize input
+                model.Email = model.Email?.Trim().ToLower();
+
+                // 2. Tìm user theo email (KHÔNG compare password trong query)
+                var user = await context.Users
+                    .FirstOrDefaultAsync(u => u.Email == model.Email);
+
+                // ✅ FIX #4: CHECK ACCOUNT STATUS
+                if (user == null)
+                {
+                    // Generic error - không tiết lộ user có tồn tại không
+                    ModelState.AddModelError("", "Email hoặc Mật khẩu không đúng!");
+                    IncrementFailedAttempts(model.Email);
+                    return View(model);
+                }
+
+                // Check IsDelete
+                if (user.IsDelete == true)
+                {
+                    ModelState.AddModelError("", "Tài khoản đã bị xóa. Vui lòng liên hệ hỗ trợ.");
+                    return View(model);
+                }
+
+                // Check IsActive
+                if (user.IsActive == false)
+                {
+                    ModelState.AddModelError("", "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+                    return View(model);
+                }
+
+                // 3. Verify password
+                string hashedPassword = PasswordHelper.HashPassword(model.Password);
+                if (user.PasswordHash != hashedPassword)
+                {
+                    ModelState.AddModelError("", "Email hoặc Mật khẩu không đúng!");
+                    IncrementFailedAttempts(model.Email);
+                    return View(model);
+                }
+
+                // 4. ✅ Clear failed attempts (đăng nhập thành công)
+                _cache.Remove(rateLimitKey);
+
+                // 5. Tạo danh sách thông tin (Claims)
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId),
+                    new Claim("UserId", user.UserId),
+                    new Claim(ClaimTypes.Name, user.FullName ?? "User"),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role) // Quan trọng để phân quyền
+                };
+
+                // 6. Tạo Identity
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                // 7. Ghi Cookie (Đăng nhập thành công)
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                // 8. Điều hướng dựa trên Role
+                if (user.Role == "Admin")
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Dashboard", new { area = "User" });
+                }
             }
 
             // Nếu form lỗi thì trả về view kèm thông báo
             return View(model);
+        }
+
+        // ✅ Helper method để increment failed login attempts
+        private void IncrementFailedAttempts(string email)
+        {
+            var key = $"LOGIN_FAIL_{email}";
+            if (_cache.TryGetValue(key, out int attempts))
+            {
+                _cache.Set(key, attempts + 1, TimeSpan.FromMinutes(15));
+            }
+            else
+            {
+                _cache.Set(key, 1, TimeSpan.FromMinutes(15));
+            }
         }
 
         [HttpGet]
@@ -193,18 +249,74 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
         [ValidateAntiForgeryToken] // Bước 1: Nhận thông tin, gửi OTP
         public async Task<IActionResult> RegisterStep1(RegisterVM model)
         {
-            if (!ModelState.IsValid) return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+            if (!ModelState.IsValid) 
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
 
-            // 1. Check Email trùng trong DB
-            if (await context.Users.AnyAsync(u => u.Email == model.Email))
+            // ✅ FIX #2: VALIDATE INPUT
+            // 1. Validate Email format
+            if (string.IsNullOrWhiteSpace(model.Email))
             {
-                return Json(new { success = false, message = "Email này đã được sử dụng." });
+                return Json(new { success = false, message = "Email không được để trống." });
             }
 
-            // 2. Tạo OTP ngẫu nhiên (6 số)
+            if (model.Email.Length > 256)
+            {
+                return Json(new { success = false, message = "Email không được dài quá 256 ký tự." });
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(model.Email, @"^[\w\.-]+@[\w\.-]+\.\w{2,}$"))
+            {
+                return Json(new { success = false, message = "Email không đúng định dạng." });
+            }
+
+            // 2. Validate FullName
+            if (string.IsNullOrWhiteSpace(model.FullName))
+            {
+                return Json(new { success = false, message = "Họ tên không được để trống." });
+            }
+
+            if (model.FullName.Length > 150)
+            {
+                return Json(new { success = false, message = "Họ tên không được dài quá 150 ký tự." });
+            }
+
+            // 3. Validate Password
+            if (string.IsNullOrWhiteSpace(model.Password))
+            {
+                return Json(new { success = false, message = "Mật khẩu không được để trống." });
+            }
+
+            if (model.Password.Length < 6)
+            {
+                return Json(new { success = false, message = "Mật khẩu phải có ít nhất 6 ký tự." });
+            }
+
+            if (model.Password.Length > 100)
+            {
+                return Json(new { success = false, message = "Mật khẩu không được dài quá 100 ký tự." });
+            }
+
+            // 4. ✅ SANITIZE INPUT (Prevent XSS)
+            model.Email = model.Email.Trim().ToLower();
+            model.FullName = System.Net.WebUtility.HtmlEncode(model.FullName.Trim());
+
+            // 5. ✅ FIX #5: ACCOUNT ENUMERATION - Không tiết lộ email đã tồn tại
+            // Check email nhưng vẫn tiếp tục flow bình thường để không lộ thông tin
+            bool emailExists = await context.Users.AnyAsync(u => 
+                u.Email == model.Email && 
+                (u.IsDelete == false || u.IsDelete == null));
+
+            if (emailExists)
+            {
+                // Không tiết lộ email đã tồn tại, vẫn gửi OTP (nhưng không lưu)
+                // Hoặc return generic message
+                return Json(new { success = false, message = "Không thể hoàn tất đăng ký. Vui lòng thử lại hoặc sử dụng email khác." });
+            }
+
+            // 6. Tạo OTP ngẫu nhiên (6 số)
             string otp = new Random().Next(100000, 999999).ToString();
 
-            // 3. Chuẩn bị dữ liệu tạm (Hash pass luôn cho an toàn)
+            // 7. Chuẩn bị dữ liệu tạm (Hash pass luôn cho an toàn)
             var tempData = new TempRegisterData
             {
                 FullName = model.FullName,
@@ -213,11 +325,10 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
                 OtpCode = otp
             };
 
-            // 4. Lưu vào Cache (Sống 5 phút)
-            // Key là "REG_" + Email để tránh trùng với các key khác
+            // 8. Lưu vào Cache (Sống 5 phút)
             _cache.Set("REG_" + model.Email, tempData, TimeSpan.FromMinutes(5));
 
-            // 5. Gửi Email
+            // 9. Gửi Email
             string content = $@"
         <h3>Mã xác thực đăng ký (OTP)</h3>
         <p>Xin chào {model.FullName},</p>
@@ -231,7 +342,8 @@ namespace HeThongQuanLyTaiChinhCaNhan.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Lỗi gửi mail: " + ex.Message });
+                // ✅ Không lộ chi tiết lỗi
+                return Json(new { success = false, message = "Không thể gửi email. Vui lòng thử lại sau." });
             }
         }
 

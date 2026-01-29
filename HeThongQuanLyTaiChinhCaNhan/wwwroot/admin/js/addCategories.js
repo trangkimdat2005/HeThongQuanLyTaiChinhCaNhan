@@ -1,102 +1,118 @@
 ﻿$(document).ready(function () {
+    const icons = {
+        Expense: ['fa-utensils', 'fa-shopping-cart', 'fa-home', 'fa-car', 'fa-pills', 'fa-bus', 'fa-coffee', 'fa-film', 'fa-tshirt', 'fa-graduation-cap'],
+        Income: ['fa-money-bill-wave', 'fa-gift', 'fa-chart-line', 'fa-wallet', 'fa-hand-holding-usd', 'fa-coins', 'fa-piggy-bank', 'fa-briefcase']
+    };
 
-    // --- 1. PHẦN LOGIC PREVIEW (GIỮ NGUYÊN ĐỂ GIAO DIỆN ĐẸP) ---
+    function renderIcons(type) {
+        const $container = $('#iconList');
+        $container.empty();
+        const currentIcon = $('#catIcon').val();
+
+        icons[type].forEach(icon => {
+            const isActive = icon === currentIcon ? 'active' : '';
+            $container.append(`
+                <div class="col">
+                    <div class="icon-item ${isActive}" data-icon="${icon}">
+                        <i class="fas ${icon} fa-xl"></i>
+                    </div>
+                </div>
+            `);
+        });
+    }
+
+    function updateInterface() {
+        const type = $('input[name="Type"]:checked').val();
+        const color = type === 'Expense' ? '#dc3545' : '#198754';
+
+        // Cập nhật biến CSS để đổi màu theme
+        document.documentElement.style.setProperty('--theme-color', color);
+
+        // Cập nhật text Preview
+        $('#previewTypeText').text(type === 'Expense' ? 'Khoản chi' : 'Khoản thu');
+
+        const $amount = $('#previewAmount');
+        if (type === 'Expense') {
+            $amount.text('- 50.000 đ').addClass('text-danger').removeClass('text-success');
+        } else {
+            $amount.text('+ 50.000 đ').addClass('text-success').removeClass('text-danger');
+        }
+
+        // Đồng bộ màu sắc nếu người dùng chưa chọn màu riêng
+        $('#catColor').val(color).trigger('input');
+
+        // Render lại danh sách icon tương ứng
+        renderIcons(type);
+    }
+
+    // Sự kiện đổi loại giao dịch
+    $(document).on('change', 'input[name="Type"]', function () {
+        updateInterface();
+    });
+
+    // Sự kiện chọn Icon
+    $(document).on('click', '.icon-item', function () {
+        $('.icon-item').removeClass('active');
+        $(this).addClass('active');
+        const iconClass = $(this).data('icon');
+        $('#catIcon').val(iconClass);
+        $('#previewIcon').attr('class', `fas ${iconClass} text-white fa-lg`);
+    });
+
+    // Sự kiện nhập tên
     $('#catName').on('input', function () {
         $('#previewName').text($(this).val() || 'Tên danh mục');
     });
 
-    // Sự kiện đổi loại (Thu/Chi) để cập nhật Preview
-    $('input[name="Type"]').on('change', function () {
-        var type = $(this).val();
-        if (type === 'Income') {
-            $('#previewType').text('Thu nhập');
-            $('#catColor').val('#198754').trigger('input');
-        } else {
-            $('#previewType').text('Chi tiêu');
-            $('#catColor').val('#dc3545').trigger('input');
-        }
-    });
-
+    // Sự kiện chọn màu
     $('#catColor').on('input', function () {
-        var color = $(this).val();
+        const color = $(this).val();
+        $('#colorCode').val(color.toUpperCase());
         $('#previewBox').css('background-color', color);
-        $('#colorCode').text(color);
     });
 
-    $('#catIcon').on('change', function () {
-        var icon = $(this).val();
-        $('#previewIcon').attr('class', 'fas text-white fa-lg ' + icon);
-    });
-
-
-    // --- 2. XỬ LÝ SUBMIT FORM AJAX (QUAN TRỌNG) ---
+    // Submit Form
     $('#createCategoryForm').on('submit', function (e) {
         e.preventDefault();
 
-        // --- FIX LỖI "TYPE REQUIRED" ---
-        // Thay vì lấy theo name, ta kiểm tra ID trực tiếp.
-        // Nếu ô Income đang được tích -> Type là 'Income', ngược lại là 'Expense'
-        var selectedType = $('#typeIncome').is(':checked') ? 'Income' : 'Expense';
-
-        // Gom dữ liệu thành Object JSON
-        var categoryData = {
+        const categoryData = {
             CategoryName: $('#catName').val(),
-            Type: selectedType, // <-- Đã sửa: dùng biến selectedType ở trên
+            Type: $('input[name="Type"]:checked').val(),
             Color: $('#catColor').val(),
             Icon: $('#catIcon').val()
         };
 
-        // Lấy Token chống giả mạo
-        var token = $('input[name="__RequestVerificationToken"]').val();
+        const token = $('input[name="__RequestVerificationToken"]').val();
 
-        // Hiển thị Loading
         Swal.fire({
-            title: 'Đang lưu...',
-            allowOutsideClick: false,
+            title: 'Đang xử lý...',
             didOpen: () => { Swal.showLoading() }
         });
 
-        // Gửi AJAX
         $.ajax({
             url: '/Admin/Categories/Add',
             type: 'POST',
             contentType: 'application/json',
-            headers: { "RequestVerificationToken": token }, // Gửi kèm token header
+            headers: { "RequestVerificationToken": token },
             data: JSON.stringify(categoryData),
-            success: function (response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: response.message,
-                        showCancelButton: true,
-                        confirmButtonText: 'Về danh sách',
-                        cancelButtonText: 'Thêm tiếp'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '/Admin/Categories';
-                        } else {
-                            resetForm();
-                        }
+            success: function (res) {
+                if (res.success) {
+                    Swal.fire('Thành công!', res.message, 'success').then(() => {
+                        window.location.href = '/Admin/Categories';
                     });
                 } else {
-                    // Hiện lỗi chi tiết từ Controller trả về
-                    Swal.fire('Lỗi!', response.message, 'error');
+                    Swal.fire('Lỗi!', res.message, 'error');
                 }
-            },
-            error: function () {
-                Swal.fire('Lỗi!', 'Không thể kết nối đến server.', 'error');
             }
         });
     });
+
+    // Khởi tạo lần đầu
+    updateInterface();
 });
 
-// Hàm Reset Form sau khi thêm thành công
 function resetForm() {
     $('#createCategoryForm')[0].reset();
-    $('#previewName').text('Tên danh mục');
-    $('#catColor').val('#dc3545').trigger('input');
-    $('#catIcon').val('fa-utensils').trigger('change');
-    // Reset lại radio về mặc định Expense
-    $('#typeExpense').prop('checked', true);
+    $('#typeExpense').prop('checked', true).trigger('change');
+    $('#catName').trigger('input');
 }
