@@ -19,7 +19,7 @@
 </head>
 
 <body>
-
+    @Html.AntiForgeryToken()
     <div id="wrapper">
 
         <div id="sidebar-wrapper">
@@ -62,7 +62,7 @@
             </div>
 
             <div class="mt-auto p-3 border-top bg-white">
-                <a href="#" onclick="logoutUser()" class="btn btn-outline-danger w-100 fw-bold shadow-sm">
+                <a href="#" id="logout-user" class="btn btn-outline-danger w-100 fw-bold shadow-sm">
                     <i class="fas fa-sign-out-alt me-2"></i> Đăng Xuất
                 </a>
             </div>
@@ -98,17 +98,11 @@
 
                         <div class="vr h-100 mx-2 text-secondary"></div>
 
-                        <div class="dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                                <span class="me-2 d-none d-lg-block text-dark fw-bold small">Nguyễn Văn A</span>
-                                <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=4e73df&color=fff" class="avatar-img rounded-circle">
+                        <div class="">
+                            <a class="nav-link d-flex align-items-center" >
+                                <span id="navFullName" class="me-2 d-none d-lg-block text-dark fw-bold small">Đang tải...</span>
+                                <img id="navAvatar" src="" class="avatar-img rounded-circle" style="width: 40px; height: 40px;">
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                                <li><a class="dropdown-item" href="/user/profile.html"><i class="fas fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
-                                <li><a class="dropdown-item" href="/user/categories.html"><i class="fas fa-cog me-2 text-muted"></i>Cài đặt</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
-                            </ul>
                         </div>
                     </div>
                 </div>

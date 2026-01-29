@@ -1,120 +1,195 @@
-﻿// 1. MOCK DATA (Giống record trong Users table)
-var currentUser = {
-    UserID: "user-01",
-    Email: "nguyenvana@test.com",
-    FullName: "Nguyễn Văn A",
-    AvatarUrl: "https://ui-avatars.com/api/?name=Nguyen+Van+A&background=4e73df&color=fff",
-    Address: "123 Đường Lê Lợi",
-    City: "Hồ Chí Minh",
-    Country: "Việt Nam",
-    DateOfBirth: "1995-05-15",
-    Role: "User",
-    LastLogin: "2026-01-11 08:30:00",
-    CreatedAt: "2025-12-01"
-};
-
-$(document).ready(function () {
+﻿$(document).ready(function () {
     loadProfile();
 });
 
-// 2. LOAD DATA VÀO FORM
-function loadProfile() {
-    // Cột Trái (Summary)
-    $('#profileAvatar').attr('src', currentUser.AvatarUrl);
-    $('#displayFullName').text(currentUser.FullName);
-    $('#displayRole').text(currentUser.Role);
-
-    // Format ngày hiển thị cho đẹp
-    var joinDate = new Date(currentUser.CreatedAt).toLocaleDateString('vi-VN');
-    var lastLogin = new Date(currentUser.LastLogin).toLocaleDateString('vi-VN'); // Có thể dùng moment.js để hiện '2 phút trước'
-
-    $('#displayJoinDate').text(joinDate);
-    $('#displayLastLogin').text("Vừa xong"); // Giả lập
-
-    // Cột Phải (Form Info)
-    $('#userEmail').val(currentUser.Email);
-    $('#fullName').val(currentUser.FullName);
-    $('#dob').val(currentUser.DateOfBirth);
-    $('#address').val(currentUser.Address);
-    $('#city').val(currentUser.City);
-    $('#country').val(currentUser.Country);
+// Helper: Lấy AntiForgeryToken
+function getAntiForgeryToken() {
+    return $('input[name="__RequestVerificationToken"]').val();
 }
 
-// 3. XỬ LÝ UPLOAD AVATAR (PREVIEW)
+// 1. LOAD DATA TỪ SERVER
+function loadProfile() {
+    $.ajax({
+        url: '/User/Profile/GetProfile',
+        type: 'GET',
+        success: function (response) {
+            if (response.success) {
+                var user = response.data;
+                
+                // Cột Trái (Summary)
+                $('#profileAvatar').attr('src', user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName || 'User') + '&background=random');
+                $('#displayFullName').text(user.fullName || 'Chưa cập nhật');
+                $('#displayRole').text(user.role || 'User');
+                $('#displayJoinDate').text(user.createdAt || '...');
+                $('#displayLastLogin').text(user.lastLogin || '...');
+
+                // Cột Phải (Form Info)
+                $('#userEmail').val(user.email);
+                $('#fullName').val(user.fullName || '');
+                $('#dob').val(user.dateOfBirth || '');
+                $('#address').val(user.address || '');
+                $('#city').val(user.city || '');
+                $('#country').val(user.country || '');
+            } else {
+                Swal.fire('Lỗi', response.message, 'error');
+            }
+        },
+        error: function () {
+            Swal.fire('Lỗi', 'Không thể tải thông tin profile', 'error');
+        }
+    });
+}
+
+// 2. XỬ LÝ UPLOAD AVATAR
 $("#uploadAvatar").change(function () {
     if (this.files && this.files[0]) {
+        var formData = new FormData();
+        formData.append('avatar', this.files[0]);
+        formData.append('__RequestVerificationToken', getAntiForgeryToken());
+        
+        // Preview ảnh trước
         var reader = new FileReader();
         reader.onload = function (e) {
-            // Hiển thị ảnh vừa chọn lên thẻ img
             $('#profileAvatar').attr('src', e.target.result);
-            // Đồng thời cập nhật avatar nhỏ trên navbar (nếu có id)
-            $('.avatar-img').attr('src', e.target.result);
         }
         reader.readAsDataURL(this.files[0]);
 
-        // Thực tế: Cần gọi API upload ảnh lên server, lấy URL lưu vào DB cột AvatarUrl
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: 'Ảnh đại diện đã được cập nhật',
-            showConfirmButton: false,
-            timer: 2000
+        // Upload lên server
+        $.ajax({
+            url: '/User/Profile/UploadAvatar',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function() {
+                Swal.fire({
+                    title: 'Đang tải lên...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading() }
+                });
+            },
+            success: function (response) {
+                Swal.close();
+                if (response.success) {
+                    $('#profileAvatar').attr('src', response.avatarUrl);
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Cập nhật avatar thành công!',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                } else {
+                    Swal.fire('Lỗi', response.message, 'error');
+                }
+            },
+            error: function (xhr) {
+                Swal.close();
+                var errorMsg = xhr.responseJSON?.message || 'Không thể upload ảnh';
+                Swal.fire('Lỗi', errorMsg, 'error');
+            }
         });
     }
 });
 
-// 4. CẬP NHẬT THÔNG TIN
+// 3. CẬP NHẬT THÔNG TIN CÁ NHÂN
 $('#updateInfoForm').on('submit', function (e) {
     e.preventDefault();
 
-    // Lấy giá trị mới
-    var newName = $('#fullName').val();
+    var formData = new FormData(this);
 
-    // Giả lập Loading
-    Swal.fire({
-        title: 'Đang lưu...',
-        didOpen: () => { Swal.showLoading() },
-        timer: 1000
-    }).then(() => {
-        // Update UI
-        $('#displayFullName').text(newName);
-        // Cập nhật tên trên Navbar (nếu có class .username-nav)
-
-        Swal.fire('Thành công', 'Thông tin cá nhân đã được lưu.', 'success');
+    $.ajax({
+        url: '/User/Profile/UpdateInfo',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        beforeSend: function() {
+            Swal.fire({
+                title: 'Đang lưu...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+        },
+        success: function (response) {
+            Swal.close();
+            if (response.success) {
+                $('#displayFullName').text($('#fullName').val());
+                Swal.fire('Thành công', response.message, 'success');
+            } else {
+                Swal.fire('Lỗi', response.message, 'error');
+            }
+        },
+        error: function (xhr) {
+            Swal.close();
+            var errorMsg = xhr.responseJSON?.message || 'Không thể cập nhật thông tin';
+            Swal.fire('Lỗi', errorMsg, 'error');
+        }
     });
 });
 
-// 5. ĐỔI MẬT KHẨU
+// 4. ĐỔI MẬT KHẨU
 $('#changePassForm').on('submit', function (e) {
     e.preventDefault();
 
-    var current = $('#currentPass').val();
-    var newP = $('#newPass').val();
-    var confirmP = $('#confirmPass').val();
+    var currentPass = $('#currentPass').val();
+    var newPass = $('#newPass').val();
+    var confirmPass = $('#confirmPass').val();
 
-    if (newP !== confirmP) {
+    // Validate
+    if (newPass !== confirmPass) {
         Swal.fire('Lỗi', 'Mật khẩu xác nhận không khớp!', 'error');
         return;
     }
 
-    if (newP.length < 6) {
+    if (newPass.length < 6) {
         Swal.fire('Yếu', 'Mật khẩu phải có ít nhất 6 ký tự!', 'warning');
         return;
     }
 
-    Swal.fire({
-        title: 'Đang xử lý...',
-        didOpen: () => { Swal.showLoading() },
-        timer: 1500
-    }).then(() => {
-        $('#changePassForm')[0].reset();
-        Swal.fire('Thành công', 'Mật khẩu đã được thay đổi. Vui lòng đăng nhập lại vào lần sau.', 'success');
+    var formData = new FormData(this);
+
+    $.ajax({
+        url: '/User/Profile/ChangePassword',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        beforeSend: function() {
+            Swal.fire({
+                title: 'Đang xử lý...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+        },
+        success: function (response) {
+            Swal.close();
+            if (response.success) {
+                $('#changePassForm')[0].reset();
+                Swal.fire('Thành công', response.message, 'success');
+            } else {
+                Swal.fire('Lỗi', response.message, 'error');
+            }
+        },
+        error: function (xhr) {
+            Swal.close();
+            var errorMsg = xhr.responseJSON?.message || 'Không thể đổi mật khẩu';
+            Swal.fire('Lỗi', errorMsg, 'error');
+        }
     });
 });
 
-// Helper: Ẩn hiện pass
+// Helper: Ẩn hiện mật khẩu
 function togglePass(id) {
     var x = document.getElementById(id);
-    x.type = (x.type === "password") ? "text" : "password";
+    var icon = $(x).siblings('button').find('i');
+    
+    if (x.type === "password") {
+        x.type = "text";
+        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+    } else {
+        x.type = "password";
+        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+    }
 }

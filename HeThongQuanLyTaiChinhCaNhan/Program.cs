@@ -4,6 +4,9 @@ using HeThongQuanLyTaiChinhCaNhan.Services;
 using HeThongQuanLyTaiChinhCaNhan.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +18,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<IBaseService, BaseService>();
-
+builder.Services.AddDistributedMemoryCache(); // Bắt buộc để lưu trữ Session vào bộ nhớ
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Thời gian hết hạn session (ví dụ 30 phút)
+    options.Cookie.HttpOnly = true; // Bảo mật cookie
+    options.Cookie.IsEssential = true; // Bắt buộc phải có để hoạt động ngay cả khi người dùng từ chối cookie không thiết yếu
+});
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -27,6 +36,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // ??ng ký Email Service
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddMemoryCache();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null; // Giữ nguyên tên thuộc tính nếu cần
+    });
+
+// Ép kiểu phản hồi HTTP luôn là UTF-8
+builder.Services.Configure<WebEncoderOptions>(options =>
+{
+    options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -41,6 +61,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseStaticFiles();
 app.UseAuthentication();
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();
