@@ -98,3 +98,29 @@ function logoutUser() {
         }
     });
 }
+
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Lấy đường dẫn hiện tại (ví dụ: /User/Transactions)
+    const currentUrl = window.location.pathname.toLowerCase();
+
+    // 2. Lấy tất cả các đường link trong menu
+    const menuItems = document.querySelectorAll('.list-group-item');
+
+    menuItems.forEach(item => {
+        // Lấy giá trị href mà ASP.NET đã render ra
+        const itemHref = item.getAttribute('href').toLowerCase();
+
+        // 3. Kiểm tra logic để active
+        // Nếu URL hiện tại khớp chính xác hoặc chứa đường dẫn của item
+        if (currentUrl === itemHref || (itemHref !== "/" && currentUrl.startsWith(itemHref))) {
+            // Xóa hết active của các mục khác (phòng hờ)
+            menuItems.forEach(el => el.classList.remove('active-menu'));
+
+            // Thêm class active vào mục đúng
+            item.classList.add('active-menu');
+        }
+    });
+});

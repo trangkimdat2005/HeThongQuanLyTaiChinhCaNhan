@@ -24,16 +24,24 @@ function loadTicketsFromApi() {
             'Authorization': 'Bearer ' + localStorage.getItem('token')
         },
         success: function (data) {
-            // Map dữ liệu từ TicketDto -> mockMyTickets
-            mockMyTickets = data.map(item => ({
-                id: item.ticketId,
-                type: item.questionType,
-                respond: item.respondType,
-                desc: item.description,
-                status: item.status,
-                date: formatDate(item.createdAt)
-            }));
+            console.log("Dữ liệu thực tế từ API:", data[0]); // Xem phần tử đầu tiên có những trường gì
 
+            mockMyTickets = data.map(item => {
+                // Log thử để debug nếu vẫn bị null
+                // console.log("Mapping item:", item); 
+
+                return {
+                    // Thử cả hai trường hợp: viết hoa và viết thường
+                    id: item.ticketId || item.TicketId || 0,
+                    type: item.questionType || item.QuestionType || "N/A",
+                    respond: item.respondType || item.RespondType || "N/A",
+                    desc: item.description || item.Description || "",
+                    status: item.status || item.Status || "Open",
+                    date: formatDate(item.createdAt || item.CreatedAt)
+                };
+            });
+
+            console.log("Mảng sau khi map:", mockMyTickets);
             renderTickets();
             calculateStats();
         },
@@ -91,6 +99,7 @@ function renderTickets() {
         });
     }
     $('#ticketListBody').html(html);
+    
 }
 
 // 3. TÍNH TOÁN THỐNG KÊ
@@ -175,7 +184,7 @@ $('#createTicketForm').on('submit', function (e) {
 
     var type = $('#ticketType').val();
     var desc = $('#ticketDesc').val();
-    var respond = $('input[name="respondType"]:checked').val();
+    var respond = 'Email';
 
     // Validate dữ liệu
     if (!type || !desc || !respond) {

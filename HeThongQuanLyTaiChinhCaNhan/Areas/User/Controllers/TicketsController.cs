@@ -25,46 +25,46 @@ namespace HeThongQuanLyTaiChinhCaNhan.Areas.User.Controllers
 
 
         [HttpGet("GetAll")]
-        public IActionResult GetAll()
-        {
-            try
+            public IActionResult GetAll()
             {
-                // 1. Lấy UserId dạng chuỗi (Varchar)
-                string userId = User.GetCurrentUserId();
-
-                // Kiểm tra nếu không có userId (chưa đăng nhập hoặc lỗi token)
-                if (string.IsNullOrEmpty(userId))
+                try
                 {
-                    return Unauthorized("Không tìm thấy thông tin User.");
+                    // 1. Lấy UserId dạng chuỗi (Varchar)
+                    string userId = User.GetCurrentUserId();
+
+                    // Kiểm tra nếu không có userId (chưa đăng nhập hoặc lỗi token)
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return Unauthorized("Không tìm thấy thông tin User.");
+                    }
+
+                    // 2. Truyền điều kiện lọc: so sánh chuỗi (String Comparison)
+                    // Entity Framework sẽ dịch cái này thành SQL: WHERE UserId = 'ABC-XYZ'
+                    var tickets = _baseService.GetList<Ticket>(c => c.UserId == userId);
+
+                    // 3. Map sang DTO
+                    var result = tickets.Select(item => new TicketDto
+                    {
+                        TicketId = item.TicketId,
+                        UserId = item.UserId,
+                        QuestionType = item.QuestionType,
+                        RespondType = item.RespondType,
+                        Description = item.Description,
+                        Status = item.Status,
+                        CreatedAt = item.CreatedAt,
+                        AdminResponse = item.AdminResponse,
+                        RepliedBy = item.RepliedBy,
+                        RepliedAt = item.RepliedAt,
+                        IsDelete = item.IsDelete,
+                    }).ToList();
+
+                    return Ok(result);
                 }
-
-                // 2. Truyền điều kiện lọc: so sánh chuỗi (String Comparison)
-                // Entity Framework sẽ dịch cái này thành SQL: WHERE UserId = 'ABC-XYZ'
-                var tickets = _baseService.GetList<Ticket>(c => c.UserId == userId);
-
-                // 3. Map sang DTO
-                var result = tickets.Select(item => new TicketDto
+                catch (Exception ex)
                 {
-                    TicketId = item.TicketId,
-                    UserId = item.UserId,
-                    QuestionType = item.QuestionType,
-                    RespondType = item.RespondType,
-                    Description = item.Description,
-                    Status = item.Status,
-                    CreatedAt = item.CreatedAt,
-                    AdminResponse = item.AdminResponse,
-                    RepliedBy = item.RepliedBy,
-                    RepliedAt = item.RepliedAt,
-                    IsDelete = item.IsDelete,
-                }).ToList();
-
-                return Ok(result);
+                    return StatusCode(500, "Internal server error: " + ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
 
 
         [HttpPost("Create")]
